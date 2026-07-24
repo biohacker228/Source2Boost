@@ -193,6 +193,9 @@ public static class TweakCatalog
                 RegistryHive.LocalMachine, Cs2Ifeo,
                 new[] { new RegEntry("CpuPriorityClass", RegistryValueKind.DWord, 3) }),
 
+            // Аффинити CS2 по топологии CPU — виден только на гибридных Intel / много-CCD AMD.
+            new Cs2AffinityTweak(),
+
             new PowerPlanTweak(),
 
             // ---- Фреймтайм (Medium, перезапуск) ----

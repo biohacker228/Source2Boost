@@ -97,6 +97,39 @@ public static class BiosAdvisor
                      "Для рівного фреймтайму вимкни в BIOS глибокий сон ядер — шукай пункт «CPU C States» / «Global C-state Control» / «Package C State Limit» і постав Disabled. Заодно план живлення CPU на максимум («High Performance» / «Max Performance»). Частота перестане гуляти — менше мікрофризів. Слідкуй за температурою CPU. (Назви в BIOS завжди англійською.)",
                      "For steadier frametime, in BIOS disable deep core sleep — look for 'CPU C States' / 'Global C-state Control' / 'Package C State Limit' and set it to Disabled. Also set the CPU power plan to max ('High Performance' / 'Max Performance'). Clocks stop wandering — fewer micro-stutters. Watch CPU temps.")));
 
+        // 4b) Топология CPU: гибрид Intel / много-CCD AMD — известная болячка планирования CS2.
+        var topo = CpuTopology.Detect(hw);
+        if (topo.Kind == CpuTopologyKind.IntelHybrid)
+        {
+            tips.Add(new BiosTip(BiosTipLevel.Recommended,
+                new L10n("E-ядра мешают CS2 (Intel-гибрид)",
+                         "E-ядра заважають CS2 (Intel-гібрид)",
+                         "E-cores hurt CS2 (Intel hybrid)"),
+                new L10n("У тебя гибридный CPU (P + E ядра). Source 2 иногда уводит главный поток на медленные E-ядра → просадки и стуттер. Наш твик «CS2 на правильные ядра» держит игру на P-ядрах софтом. Надёжнее — выключить E-ядра в BIOS на время игры: ищи «CPU E-cores» / «Efficient-cores» → Disabled, у ASUS есть «Legacy Game Compatibility Mode». (Названия в BIOS английские.)",
+                         "У тебе гібридний CPU (P + E ядра). Source 2 іноді тягне головний потік на повільні E-ядра → просадки та стуттер. Наш твік «CS2 на правильні ядра» тримає гру на P-ядрах софтом. Надійніше — вимкнути E-ядра в BIOS: шукай «CPU E-cores» / «Efficient-cores» → Disabled, в ASUS є «Legacy Game Compatibility Mode».",
+                         "You have a hybrid CPU (P + E cores). Source 2 sometimes parks its main thread on slow E-cores → drops and stutter. Our 'Pin CS2 to the right cores' tweak keeps it on P-cores in software. More reliable: disable E-cores in BIOS — look for 'CPU E-cores' / 'Efficient-cores' → Disabled (ASUS: 'Legacy Game Compatibility Mode').")));
+        }
+        else if (topo.Kind == CpuTopologyKind.AmdMultiCcd)
+        {
+            bool x3d = hw.CpuName.Contains("X3D", StringComparison.OrdinalIgnoreCase);
+            tips.Add(new BiosTip(BiosTipLevel.Recommended,
+                new L10n("Много-CCD Ryzen: держи CS2 на быстром CCD",
+                         "Багато-CCD Ryzen: тримай CS2 на швидкому CCD",
+                         "Multi-CCD Ryzen: keep CS2 on the fast CCD"),
+                new L10n((x3d
+                    ? "У тебя X3D с двумя CCD: 3D-кэш только на первом, и если CS2 уедет на второй CCD — теряешь и кэш, и FPS. Поставь свежий AMD Chipset Driver (в нём «3D V-Cache Performance Optimizer» сам держит игры на кэш-CCD) и в BIOS включи «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). "
+                    : "У тебя Ryzen с двумя CCD: переход потока между CCD добавляет задержку → стуттер в CS2. В BIOS включи «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). Как вариант — оставить 1 CCD («CCD Control» → 1) на время игры. ")
+                    + "Наш твик «CS2 на правильные ядра» уже сажает игру на первый CCD софтом.",
+                    (x3d
+                    ? "У тебе X3D з двома CCD: 3D-кеш лише на першому. Постав свіжий AMD Chipset Driver («3D V-Cache Performance Optimizer») і в BIOS увімкни «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). "
+                    : "У тебе Ryzen з двома CCD: перехід потоку між CCD додає затримку. У BIOS увімкни «CPPC» + «CPPC Preferred Cores». Як варіант — 1 CCD («CCD Control» → 1). ")
+                    + "Наш твік «CS2 на правильні ядра» вже садить гру на перший CCD софтом.",
+                    (x3d
+                    ? "You have an X3D with two CCDs: the 3D cache is only on the first. Install the latest AMD Chipset Driver ('3D V-Cache Performance Optimizer' keeps games on the cache CCD) and enable 'CPPC' + 'CPPC Preferred Cores' (Enabled/Auto) in BIOS. "
+                    : "You have a dual-CCD Ryzen: threads bouncing across CCDs add latency → CS2 stutter. Enable 'CPPC' + 'CPPC Preferred Cores' in BIOS, or run 1 CCD ('CCD Control' → 1). ")
+                    + "Our 'Pin CS2 to the right cores' tweak already keeps the game on the first CCD in software.")));
+        }
+
         // 5) Прочее (Fast Boot / HPET / обновление BIOS).
         tips.Add(new BiosTip(BiosTipLevel.Optional,
             new L10n("Мелочи: Fast Boot, HPET, обновление BIOS",

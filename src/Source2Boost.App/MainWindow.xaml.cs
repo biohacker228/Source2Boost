@@ -424,10 +424,12 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         EnsureWatcher();
     }
 
-    /// <summary>Запускает/останавливает сторож CS2 в зависимости от тумблера «Авто-режим».</summary>
+    /// <summary>Сторож CS2 нужен, если включён Авто-режим ИЛИ твик аффинити CS2 (его надо
+    /// переприменять на старте игры). Запускает/останавливает таймер соответственно.</summary>
     private void EnsureWatcher()
     {
-        bool on = AutoGameToggle?.IsChecked == true;
+        bool affinity = Ctx().Backup.LoadState(Cs2AffinityTweak.StateKey) == "1";
+        bool on = AutoGameToggle?.IsChecked == true || affinity;
         if (on && _cs2Watch is null)
         {
             _cs2WasRunning = PresentMonService.IsCs2Running();
@@ -441,32 +443,42 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         }
     }
 
-    /// <summary>Раз в ~12с: поймать запуск/выход CS2 и включить/снять авто-режим.</summary>
+    /// <summary>Раз в ~12с: ловим запуск/выход CS2 (авто-режим) и переприменяем аффинити.</summary>
     private async void Cs2Watch_Tick(object? sender, EventArgs e)
     {
         bool running = PresentMonService.IsCs2Running();
-        if (running == _cs2WasRunning) return;
-        _cs2WasRunning = running;
+        bool autoGame = AutoGameToggle?.IsChecked == true;
 
-        if (running)
+        if (running != _cs2WasRunning)
         {
-            Logger.Info("watch: CS2 started -> auto boost + enforce");
-            // 1) Переприменить последний профиль (службы, что Windows могла сбросить).
-            var lastProfile = Ctx().Backup.LoadState("last-profile");
-            if (Enum.TryParse<Profile>(lastProfile, out var prof))
+            _cs2WasRunning = running;
+            if (running && autoGame)
             {
-                var ctx = Ctx();
-                await Task.Run(() => new Orchestrator(ctx).Apply(TweakCatalog.ForProfile(prof, ctx), createRestorePoint: false));
+                Logger.Info("watch: CS2 started -> auto boost + enforce");
+                // 1) Переприменить последний профиль (службы, что Windows могла сбросить).
+                var lastProfile = Ctx().Backup.LoadState("last-profile");
+                if (Enum.TryParse<Profile>(lastProfile, out var prof))
+                {
+                    var ctx = Ctx();
+                    await Task.Run(() => new Orchestrator(ctx).Apply(TweakCatalog.ForProfile(prof, ctx), createRestorePoint: false));
+                }
+                // 2) Включить Игровой фокус.
+                if (!GameBoostService.IsBoosted) await Task.Run(GameBoostService.Boost);
+                RefreshBoostMode();
             }
-            // 2) Включить Игровой фокус.
-            if (!GameBoostService.IsBoosted) await Task.Run(GameBoostService.Boost);
-            RefreshBoostMode();
+            else if (!running && autoGame)
+            {
+                Logger.Info("watch: CS2 exited -> restore background");
+                if (GameBoostService.IsBoosted) await Task.Run(GameBoostService.Restore);
+                RefreshBoostMode();
+            }
         }
-        else
+
+        // Аффинити переприменяем КАЖДЫЙ тик, пока CS2 живёт: движок иногда сбрасывает маску.
+        if (running && Ctx().Backup.LoadState(Cs2AffinityTweak.StateKey) == "1")
         {
-            Logger.Info("watch: CS2 exited -> restore background");
-            if (GameBoostService.IsBoosted) await Task.Run(GameBoostService.Restore);
-            RefreshBoostMode();
+            var mask = CpuTopology.Detect(_hw).RecommendedMask;
+            if (mask != 0) await Task.Run(() => Cs2Affinity.Apply(mask));
         }
     }
 
@@ -600,6 +612,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         _busy = false;
         BtnApplySelected.IsEnabled = true;
         BuildTweaks(); // перечитать реальное состояние в тоглы
+        EnsureWatcher(); // мог включиться/выключиться твик аффинити CS2 → (пере)запустить сторож
         await ShowInfoDialog(Loc.T("tweaks.title"), string.Format(Loc.T("tweaks.reconcile"), applied, reverted));
     }
 
@@ -688,6 +701,21 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         try { Clipboard.SetText(TxtLaunch.Text); BtnCopyLaunch.Content = Loc.T("cs2.copied"); }
         catch { /* clipboard busy */ }
+    }
+
+    /// <summary>Разовый сброс кэша шейдеров CS2/GPU (лечит фризы рекомпиляции). Кэш пересоберётся.</summary>
+    private async void ShaderClean_Click(object sender, RoutedEventArgs e)
+    {
+        BtnShaderClean.IsEnabled = false;
+        TxtShaderStatus.Visibility = Visibility.Visible;
+        TxtShaderStatus.Text = Loc.T("cs2.shader.cleaning");
+        try
+        {
+            await Task.Run(() => Core.ShaderCacheTweak.CleanNow(s => Core.Logger.Info(s)));
+            TxtShaderStatus.Text = Loc.T("cs2.shader.done");
+        }
+        catch (Exception ex) { await ShowErrorDialog("shader-clean", ex); }
+        finally { BtnShaderClean.IsEnabled = true; }
     }
 
     private async void InstallAutoexec_Click(object sender, RoutedEventArgs e)
@@ -905,6 +933,9 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtVideoWarn.Text = Loc.T("cs2.video.warn");
         TxtApplyVideo.Text = Loc.T("cs2.video.apply");
         BtnRestoreVideo.Content = Loc.T("cs2.video.restore");
+        TxtShaderTitle.Text = Loc.T("cs2.shader.title");
+        TxtShaderDesc.Text = Loc.T("cs2.shader.desc");
+        BtnShaderClean.Content = Loc.T("cs2.shader.btn");
         RefreshCs2();
         TxtRestTitle.Text = Loc.T("restore.title");
         TxtRestSub.Text = Loc.T("restore.sub");

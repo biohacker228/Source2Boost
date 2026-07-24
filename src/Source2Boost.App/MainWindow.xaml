@@ -559,6 +559,17 @@
                                 </StackPanel>
                             </StackPanel>
                         </Border>
+
+                        <!-- Против стуттера: разовый сброс кэша шейдеров (лечит фризы на любом железе) -->
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16,14" Margin="0,14,0,0">
+                            <StackPanel>
+                                <TextBlock x:Name="TxtShaderTitle" Text="Лечение стуттера: сброс шейдеров" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="SemiBold" />
+                                <TextBlock x:Name="TxtShaderDesc" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,6,0,0"
+                                           Text="Битый кэш шейдеров CS2/драйвера — частая причина фризов при стрельбе и пике даже на мощном ПК. Разово чистим его (пересоберётся при следующем запуске: первые пару минут догрузка, потом ровно). Делай после крупного обновления или если появились дёргания." />
+                                <TextBlock x:Name="TxtShaderStatus" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" Visibility="Collapsed" />
+                                <ui:Button x:Name="BtnShaderClean" Content="Сбросить кэш шейдеров" Click="ShaderClean_Click" HorizontalAlignment="Left" Margin="0,12,0,0" Padding="16,9" Cursor="Hand" />
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                     <StackPanel x:Name="PanelRestore" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
                         <TextBlock x:Name="TxtRestTitle" Text="Откат изменений" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
