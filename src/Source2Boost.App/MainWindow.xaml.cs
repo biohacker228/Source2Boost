@@ -551,7 +551,10 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             "Maximum" => Profile.Maximum,
             _ => null,
         };
-        var cardSel = applied ?? Profile.Optimal;   // без применения — рекомендуем «Оптимальный»
+        // Рекомендация профиля — по железу (классификатор), а не жёстко «Оптимальный».
+        var reco = HardwareClassifier.Classify(_hw);
+        var cardSel = applied ?? reco.RecommendedProfile;
+        UpdateHwDiag(reco);
 
         var accent = (Brush)FindResource("Accent");
         var line = (Brush)FindResource("Line");
@@ -587,6 +590,21 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
                 lbl.Text = Loc.T("profile.apply");
             }
         }
+    }
+
+    /// <summary>Заполнить баннер-диагноз «профиль подобран под ваше железо» текстом классификатора.</summary>
+    private void UpdateHwDiag(HardwareClassifier.Result reco)
+    {
+        if (TxtHwDiagTitle is null) return;
+        var recName = Loc.T(ProfileNameKey(reco.RecommendedProfile));
+        TxtHwDiagTitle.Text = string.Format(Loc.T("hw.diag.title"), recName);
+        TxtHwDiagBody.Text = reco.Headline.For(Loc.Lang);
+        TxtHwDiagFocus.Text = reco.Focus.For(Loc.Lang);
+        // Инлайн-бейдж «рекомендуется» на карточке «Оптимальный» — только если он и рекомендован
+        // (иначе противоречил бы баннеру, который может советовать «Максимум» на слабом ПК).
+        if (BadgeRecoOptimal is not null)
+            BadgeRecoOptimal.Visibility = reco.RecommendedProfile == Profile.Optimal
+                ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void ApplySelected_Click(object sender, RoutedEventArgs e)
