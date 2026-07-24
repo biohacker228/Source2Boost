@@ -1,0 +1,735 @@
+﻿<ui:FluentWindow x:Class="Source2Boost.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="Source2Boost" Height="760" Width="1120"
+        Icon="icon.ico"
+        MinHeight="600" MinWidth="900"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="None"
+        WindowCornerPreference="Round"
+        WindowStartupLocation="CenterScreen">
+
+    <!-- ==== Фирменная тёплая ignition-палитра (без автотинта WPF-UI) ==== -->
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <SolidColorBrush x:Key="Bg"        Color="#14110D" />
+        <SolidColorBrush x:Key="Side"      Color="#17130D" />
+        <SolidColorBrush x:Key="Surface"   Color="#1D1811" />
+        <SolidColorBrush x:Key="Card"      Color="#241E16" />
+        <SolidColorBrush x:Key="Line"      Color="#332B20" />
+        <SolidColorBrush x:Key="Text"      Color="#F3EDE2" />
+        <SolidColorBrush x:Key="Text2"     Color="#BCAE9B" />
+        <SolidColorBrush x:Key="Muted"     Color="#8D8069" />
+        <SolidColorBrush x:Key="Accent"    Color="#FF6A2B" />
+        <SolidColorBrush x:Key="AccentSoft" Color="#33FF6A2B" />
+        <SolidColorBrush x:Key="Good"      Color="#45D68A" />
+        <SolidColorBrush x:Key="Warn"      Color="#F5C53D" />
+        <SolidColorBrush x:Key="Crit"      Color="#FF6B6F" />
+        <LinearGradientBrush x:Key="AccentGrad" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FF6A2B" Offset="0" />
+            <GradientStop Color="#FFA53D" Offset="1" />
+        </LinearGradientBrush>
+
+        <!-- Навигационная кнопка -->
+        <Style x:Key="NavBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource Text2}" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="9" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource AccentSoft}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Текст чипа риска: цвет по ключу (Good/Warn/Crit/Muted) через DynamicResource,
+             чтобы менялся вместе с темой. Общий для списков «Твики» и «Откат». -->
+        <Style x:Key="ChipText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Good">
+                    <Setter Property="Foreground" Value="{DynamicResource Good}" /></DataTrigger>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Warn">
+                    <Setter Property="Foreground" Value="{DynamicResource Warn}" /></DataTrigger>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Crit">
+                    <Setter Property="Foreground" Value="{DynamicResource Crit}" /></DataTrigger>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Muted">
+                    <Setter Property="Foreground" Value="{DynamicResource Muted}" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Текст чипа уровня совета (Crit/Accent/Muted) — для карточек «Диагноз» и «BIOS». -->
+        <Style x:Key="AdviceChip" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Crit">
+                    <Setter Property="Foreground" Value="{DynamicResource Crit}" /></DataTrigger>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Accent">
+                    <Setter Property="Foreground" Value="{DynamicResource Accent}" /></DataTrigger>
+                <DataTrigger Binding="{Binding ChipForegroundKey}" Value="Muted">
+                    <Setter Property="Foreground" Value="{DynamicResource Muted}" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Карточка-совет (заголовок + чип уровня + текст) — общая для «Диагноз» и «BIOS». -->
+        <DataTemplate x:Key="AdviceCardTemplate">
+            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                    CornerRadius="11" Padding="15,12" Margin="0,0,0,9">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+                        <Border CornerRadius="20" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ChipText}" Style="{StaticResource AdviceChip}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Detail}" FontSize="12.5" TextWrapping="Wrap"
+                               Margin="0,5,0,0" MaxWidth="900" Foreground="{DynamicResource Text2}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Background="{DynamicResource Bg}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Source2Boost">
+            <ui:TitleBar.Icon>
+                <ui:SymbolIcon Symbol="Gauge24" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ===== Sidebar ===== -->
+            <Border Grid.Column="0" Background="{DynamicResource Side}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
+                <DockPanel Margin="12,6,12,14">
+                    <!-- brand -->
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4,4,0,14">
+                        <Border Width="28" Height="28" CornerRadius="8" Background="{StaticResource AccentGrad}">
+                            <ui:SymbolIcon Symbol="Gauge24" FontSize="16" Foreground="White" />
+                        </Border>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Source2Boost" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource Text}" />
+                            <TextBlock x:Name="TxtBrandSub" Text="Оптимизатор CS2" FontSize="10.5" Foreground="{DynamicResource Muted}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- bottom controls -->
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <Border Height="1" Background="{DynamicResource Line}" Margin="2,8" />
+                        <ComboBox x:Name="CmbLang" SelectedIndex="0" Margin="2,4">
+                            <ComboBoxItem Content="Русский" />
+                            <ComboBoxItem Content="Українська" />
+                            <ComboBoxItem Content="English" />
+                        </ComboBox>
+                        <ui:Button x:Name="BtnTheme" Content="Тема" Icon="{ui:SymbolIcon WeatherMoon24}" HorizontalAlignment="Stretch" Margin="2,4" />
+                    </StackPanel>
+
+                    <!-- nav -->
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="ОСНОВНОЕ" FontSize="10" Foreground="{DynamicResource Muted}" Margin="8,8,0,4" />
+                        <Button x:Name="NavDash"    Style="{StaticResource NavBtn}" Tag="dash"    Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Home24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavDash" Text="Обзор" /></StackPanel></Button>
+                        <Button x:Name="NavBoost"   Style="{StaticResource NavBtn}" Tag="boost"   Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Rocket24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavBoost" Text="Оптимизация" /></StackPanel></Button>
+                        <Button x:Name="NavTweaks"  Style="{StaticResource NavBtn}" Tag="tweaks"  Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Options24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavTweaks" Text="Твики" /></StackPanel></Button>
+                        <Button x:Name="NavMonitor" Style="{StaticResource NavBtn}" Tag="monitor" Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Pulse24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavMonitor" Text="Мониторинг" /></StackPanel></Button>
+                        <TextBlock Text="ИГРА" FontSize="10" Foreground="{DynamicResource Muted}" Margin="8,14,0,4" />
+                        <Button x:Name="NavCs2"     Style="{StaticResource NavBtn}" Tag="cs2"     Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Games24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavCs2" Text="Настройки CS2" /></StackPanel></Button>
+                        <Button x:Name="NavBios"    Style="{StaticResource NavBtn}" Tag="bios"    Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavBios" Text="BIOS" /></StackPanel></Button>
+                        <Button x:Name="NavRestore" Style="{StaticResource NavBtn}" Tag="restore" Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="ArrowUndo24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavRestore" Text="Откат" /></StackPanel></Button>
+                        <Button x:Name="NavSettings" Style="{StaticResource NavBtn}" Tag="settings" Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Settings24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavSettings" Text="Настройки" /></StackPanel></Button>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ===== Content ===== -->
+            <ScrollViewer Grid.Column="1" Padding="28,10,28,28" VerticalScrollBarVisibility="Auto">
+                <Grid>
+                    <!-- Первый запуск: приветствие + скан по центру -->
+                    <StackPanel x:Name="PanelWelcome" Visibility="Collapsed" MaxWidth="560" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Width="96" Height="96" CornerRadius="26" HorizontalAlignment="Center" Margin="0,0,0,22"
+                                Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="2">
+                            <ui:SymbolIcon Symbol="Gauge24" FontSize="52" Foreground="{DynamicResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock x:Name="TxtWelcomeTitle" Text="Source2Boost" FontSize="30" FontWeight="Bold" Foreground="{DynamicResource Text}" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="TxtWelcomeSub" TextWrapping="Wrap" TextAlignment="Center" FontSize="14" Foreground="{DynamicResource Text2}" Margin="0,8,0,26" MaxWidth="460"
+                                   Text="Начнём со сканирования системы: найдём слабые места, подберём план оптимизации и покажем, что стоит сделать вручную." />
+                        <Button x:Name="BtnWelcomeScan" Click="WelcomeScan_Click" Cursor="Hand" BorderThickness="0" Padding="26,14" Foreground="White" FontSize="15.5" FontWeight="SemiBold" HorizontalAlignment="Center">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{StaticResource AccentGrad}" CornerRadius="13" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Search24" FontSize="18" Margin="0,0,10,0" />
+                                <TextBlock x:Name="TxtWelcomeScan" Text="Сканировать систему" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel x:Name="WelcomeProgress" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0" Visibility="Collapsed">
+                            <ui:ProgressRing IsIndeterminate="True" Width="22" Height="22" Foreground="{DynamicResource Accent}" />
+                            <TextBlock x:Name="TxtWelcomeStatus" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="13.5" Foreground="{DynamicResource Text2}" Text="Сканирую систему…" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Dashboard -->
+                    <StackPanel x:Name="PanelDash" MaxWidth="980" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtTitle" Text="Обзор системы" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtTagline" Text="Железо просканировано" FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
+
+                        <Border x:Name="DiagBorder" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1.5" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon x:Name="DiagIcon" Grid.Column="0" Symbol="Target24" Foreground="{DynamicResource Accent}" FontSize="22" VerticalAlignment="Top" Margin="0,1,12,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock x:Name="TxtDiagTitle" Text="Диагноз" FontWeight="Bold" FontSize="14.5" Foreground="{DynamicResource Text}" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="TxtDiagMsg" Text="Сканирую…" Foreground="{DynamicResource Text2}" TextWrapping="Wrap" FontSize="12.5" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <UniformGrid Columns="4" Rows="1" Margin="0,0,0,16">
+                            <Border Style="{x:Null}" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,6,0">
+                                <StackPanel>
+                                    <TextBlock x:Name="LblCpu" Text="Процессор" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                    <TextBlock x:Name="ValCpu" Text="—" FontWeight="Bold" FontSize="15.5" Foreground="{DynamicResource Text}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="NoteCpu" Foreground="{DynamicResource Text2}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="3,0">
+                                <StackPanel>
+                                    <TextBlock x:Name="LblGpu" Text="Видеокарта" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                    <TextBlock x:Name="ValGpu" Text="—" FontWeight="Bold" FontSize="15.5" Foreground="{DynamicResource Text}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="NoteGpu" Foreground="{DynamicResource Text2}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="3,0">
+                                <StackPanel>
+                                    <TextBlock x:Name="LblRam" Text="Память" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                    <TextBlock x:Name="ValRam" Text="—" FontWeight="Bold" FontSize="15.5" Foreground="{DynamicResource Text}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="NoteRam" Foreground="{DynamicResource Text2}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="6,0,0,0">
+                                <StackPanel>
+                                    <TextBlock x:Name="LblMon" Text="Монитор" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                    <TextBlock x:Name="ValMon" Text="—" FontWeight="Bold" FontSize="15.5" Foreground="{DynamicResource Text}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="NoteMon" Foreground="{DynamicResource Text2}" FontSize="11.5" Margin="0,3,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <TextBlock x:Name="TxtFindingsHdr" Text="Что можно улучшить" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text}" Margin="0,0,0,8" />
+                        <ItemsControl x:Name="DashFindings" Margin="0,0,0,16"
+                                      ItemsSource="{Binding Findings}" ItemTemplate="{StaticResource AdviceCardTemplate}" />
+
+                        <!-- Игровой фокус (Boost Mode): усыпить фон на время игры -->
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16,13" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="TopSpeed24" Foreground="{DynamicResource Accent}" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                        <TextBlock x:Name="TxtBoostModeTitle" Text="Игровой фокус" FontWeight="Bold" FontSize="14.5" Foreground="{DynamicResource Text}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock x:Name="TxtBoostModeDesc" TextWrapping="Wrap" FontSize="12.5" Foreground="{DynamicResource Text2}" Margin="0,4,14,0"
+                                               Text="Замораживает лишний фон (браузер, облачные синхронизации) и чистит память. Discord, музыку и Steam не трогает. Освобождает ядра CPU — выше 1% low, меньше стуттера." />
+                                    <TextBlock x:Name="TxtBoostModeStatus" FontSize="12" Foreground="{DynamicResource Muted}" Margin="0,6,0,0" Visibility="Collapsed" />
+                                </StackPanel>
+                                <ui:ToggleSwitch x:Name="BoostToggle" Grid.Column="1" VerticalAlignment="Center" Click="BoostToggle_Click" />
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="BtnOptimize" Click="Optimize_Click" Cursor="Hand" BorderThickness="0" Padding="20,11" Foreground="White" FontSize="14" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Rocket24" FontSize="16" Margin="0,0,8,0" />
+                                    <TextBlock x:Name="TxtOptimize" Text="Оптимизировать" />
+                                </StackPanel>
+                            </Button>
+                            <ui:Button x:Name="BtnScan" Content="Сканировать заново" Click="Scan_Click" Margin="10,0,0,0" Padding="14,10" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Tweaks -->
+                    <StackPanel x:Name="PanelTweaks" Visibility="Collapsed" MaxWidth="980" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtTweaksTitle" Text="Твики вручную" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtTweaksSub" Text="Включай по одному. У каждого — риск и ожидаемый эффект." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
+                        <ItemsControl x:Name="TweaksList" ItemsSource="{Binding Tweaks}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                                            CornerRadius="11" Padding="14,11" Margin="0,0,0,8" Opacity="{Binding RowOpacity}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5"
+                                                               VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+                                                    <Border Background="{Binding ChipBackground}" CornerRadius="20" Padding="8,2"
+                                                            Margin="8,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding ChipText}" Style="{StaticResource ChipText}" />
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap"
+                                                           Margin="0,3,0,0" MaxWidth="620" Foreground="{DynamicResource Text2}" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Impact}" FontSize="11.5"
+                                                       VerticalAlignment="Center" Margin="12,0,14,0" Foreground="{DynamicResource Good}" />
+                                            <ui:ToggleSwitch Grid.Column="2" IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                                             IsEnabled="{Binding IsEnabled}" VerticalAlignment="Center"
+                                                             AutomationProperties.Name="{Binding Title}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Button x:Name="BtnApplySelected" Click="ApplySelected_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock x:Name="TxtApplySelected" Text="Применить выбранные" />
+                            </Button>
+                            <ui:Button x:Name="BtnRevertAll" Content="Откатить всё" Click="RevertAll_Click" Margin="10,0,0,0" Padding="14,10" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Placeholder screens -->
+                    <StackPanel x:Name="PanelBoost" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtBoostTitle" Text="Оптимизация в один клик" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtBoostSub" Text="Выбери профиль. Всё обратимо, перед применением создаётся точка восстановления." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
+
+                        <Border x:Name="CardProfSafe" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock x:Name="TxtProfSafe" Text="Безопасный" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text}" />
+                                    <TextBlock x:Name="TxtProfSafeDesc" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <Button x:Name="BtnProfSafe" Grid.Column="1" Click="ProfSafe_Click" VerticalAlignment="Center" Cursor="Hand" Padding="16,9" BorderThickness="1.5" BorderBrush="{DynamicResource Line}" Foreground="{DynamicResource Text}" FontSize="13.5" FontWeight="SemiBold" Background="Transparent">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <TextBlock x:Name="TxtProfSafeBtn" Text="Применить" />
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="CardProfOptimal" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1.5" CornerRadius="12" Padding="16" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock x:Name="TxtProfOptimal" Text="Оптимальный" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text}" VerticalAlignment="Center" />
+                                        <Border Background="{DynamicResource AccentSoft}" CornerRadius="20" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtProfRecommended" Text="рекомендуется" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="SemiBold" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock x:Name="TxtProfOptimalDesc" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <Button x:Name="BtnProfOptimal" Grid.Column="1" Click="ProfOptimal_Click" VerticalAlignment="Center" Cursor="Hand" Padding="16,9" BorderThickness="1.5" BorderBrush="{DynamicResource Line}" Foreground="{DynamicResource Text}" FontSize="13.5" FontWeight="SemiBold" Background="Transparent">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <TextBlock x:Name="TxtProfOptimalBtn" Text="Применить" />
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="CardProfMax" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock x:Name="TxtProfMax" Text="Максимум" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text}" />
+                                    <TextBlock x:Name="TxtProfMaxDesc" TextWrapping="Wrap" MaxWidth="560" HorizontalAlignment="Left" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,4,0,0" />
+                                </StackPanel>
+                                <Button x:Name="BtnProfMax" Grid.Column="1" Click="ProfMax_Click" VerticalAlignment="Center" Cursor="Hand" Padding="16,9" BorderThickness="1.5" BorderBrush="{DynamicResource Line}" Foreground="{DynamicResource Text}" FontSize="13.5" FontWeight="SemiBold" Background="Transparent">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <TextBlock x:Name="TxtProfMaxBtn" Text="Применить" />
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock x:Name="TxtBoostStatus" Foreground="{DynamicResource Text}" FontSize="12.5" Margin="0,14,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel x:Name="PanelMonitor" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtMonTitle" Text="Тест и прогноз" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtMonSub" Text="Оценка оптимизации, прогноз FPS и реальный замер фреймтайма cs2.exe." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
+
+                        <!-- Оценка + прогноз FPS -->
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- Круглая оценка -->
+                                <Border Grid.Column="0" Width="104" Height="104" CornerRadius="52" VerticalAlignment="Top"
+                                        Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="2" Margin="0,0,20,0">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="TxtScore" Text="—" FontSize="30" FontWeight="Bold" Foreground="{DynamicResource Accent}" HorizontalAlignment="Center" />
+                                        <TextBlock Text="/ 100" FontSize="11" Foreground="{DynamicResource Muted}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock x:Name="TxtScoreTitle" Text="Оценка оптимизации" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text}" />
+                                    <TextBlock x:Name="TxtScoreSub" TextWrapping="Wrap" FontSize="12.5" Foreground="{DynamicResource Text2}" Margin="0,3,0,10" />
+                                    <TextBlock x:Name="TxtForecastTitle" Text="Прогноз среднего FPS в CS2" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Text}" />
+                                    <TextBlock x:Name="TxtForecast" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Text}" Margin="0,3,0,0" />
+                                    <TextBlock x:Name="TxtForecastSub" TextWrapping="Wrap" FontSize="11.5" Foreground="{DynamicResource Muted}" Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16">
+                            <StackPanel>
+                                <TextBlock x:Name="TxtMonHint" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="12.5"
+                                           Text="Запусти CS2, зайди на карту с ботами, затем жми «Замерить». Замер идёт 60 секунд — в это время активно двигайся и стреляй." />
+                                <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                    <Button x:Name="BtnMeasure" Click="Measure_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Pulse24" FontSize="15" Margin="0,0,8,0" />
+                                            <TextBlock x:Name="TxtMeasure" Text="Замерить (60 сек)" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock x:Name="TxtMonResult" TextWrapping="Wrap" Foreground="{DynamicResource Text}" FontFamily="Consolas" FontSize="13" Margin="0,16,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel x:Name="PanelCs2" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtCs2Title" Text="Настройки CS2" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtCs2Sub" Text="Параметры запуска Steam и autoexec.cfg для максимума FPS." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
+
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock x:Name="LblCs2Path" Text="Установка CS2" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                <TextBlock x:Name="ValCs2Path" Text="—" Foreground="{DynamicResource Text}" FontSize="12.5" Margin="0,5,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock x:Name="LblLaunch" Text="Параметры запуска" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                <TextBox x:Name="TxtLaunch" IsReadOnly="True" TextWrapping="Wrap" Margin="0,7,0,0"
+                                         HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch"
+                                         Background="{DynamicResource Surface}" Foreground="{DynamicResource Text}" BorderBrush="{DynamicResource Line}"
+                                         FontFamily="Consolas" FontSize="12.5" Padding="10,8" />
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <ui:Button x:Name="BtnCopyLaunch" Content="Копировать" Click="CopyLaunch_Click" Padding="14,8" />
+                                    <TextBlock x:Name="TxtCs2Instr" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{DynamicResource Muted}" FontSize="11.5"
+                                               Text="Вставь в Steam: ПКМ по CS2 → Свойства → Параметры запуска." />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16">
+                            <StackPanel>
+                                <TextBlock x:Name="LblAutoexec" Text="autoexec.cfg" Foreground="{DynamicResource Muted}" FontSize="12" />
+                                <TextBlock x:Name="TxtAutoexecStatus" Text="—" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,5,0,0" TextWrapping="Wrap" />
+                                <TextBlock x:Name="LblFpsCap" Text="Лимит FPS (fps_max)" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,14,0,0" />
+                                <TextBox x:Name="TxtFpsCap" Width="120" HorizontalAlignment="Left" Margin="0,6,0,0"
+                                         Background="{DynamicResource Surface}" Foreground="{DynamicResource Text}" BorderBrush="{DynamicResource Line}"
+                                         FontSize="13" Padding="8,6" LostFocus="TxtFpsCap_LostFocus" />
+                                <TextBlock x:Name="TxtFpsHint" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="11.5" Margin="0,6,0,0" />
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button x:Name="BtnInstallAutoexec" Click="InstallAutoexec_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <TextBlock x:Name="TxtInstallAutoexec" Text="Установить autoexec.cfg" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Игровой конфиг графики CS2 (max FPS) -->
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,12,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Games24" Foreground="{DynamicResource Accent}" FontSize="17" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtVideoTitle" Text="Игровой конфиг графики (макс. FPS)" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtVideoDesc" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,6,0,0"
+                                           Text="Ставит настройки графики CS2 на competitive-low (тени/эффекты/шейдеры low, MSAA и VSync off) — самый крупный игровой рычаг FPS. Разрешение не трогаем. Полностью обратимо." />
+                                <TextBlock x:Name="TxtVideoWarn" TextWrapping="Wrap" Foreground="{DynamicResource Warn}" FontSize="11.5" Margin="0,8,0,0"
+                                           Text="⚠ Закрой CS2 перед применением — иначе игра перезапишет изменения при выходе." />
+                                <TextBlock x:Name="TxtVideoStatus" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" Visibility="Collapsed" />
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button x:Name="BtnApplyVideo" Click="ApplyVideo_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <TextBlock x:Name="TxtApplyVideo" Text="Применить макс. FPS" />
+                                    </Button>
+                                    <ui:Button x:Name="BtnRestoreVideo" Content="Вернуть мои настройки" Click="RestoreVideo_Click" Margin="10,0,0,0" Padding="14,9" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel x:Name="PanelRestore" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtRestTitle" Text="Откат изменений" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtRestSub" Text="Применённые твики. Откати любой по отдельности или все сразу." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,14" />
+                        <!-- Кнопки действий СВЕРХУ (не надо листать список, чтобы откатить всё) -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <Button x:Name="BtnRestoreRevertAll" Click="RestoreRevertAll_Click" IsEnabled="{Binding HasRestoreItems}" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock x:Name="TxtRestRevertAll" Text="Откатить всё" />
+                            </Button>
+                            <ui:Button x:Name="BtnRestoreRescan" Content="Обновить" Click="RestoreRescan_Click" Margin="10,0,0,0" Padding="14,10" />
+                        </StackPanel>
+                        <TextBlock x:Name="TxtRestEmpty" Text="Пока ничего не применено." FontSize="13" Foreground="{DynamicResource Muted}"
+                                   Visibility="{Binding RestoreEmpty, Converter={StaticResource BoolToVis}}" />
+                        <StackPanel Orientation="Horizontal" Margin="2,14,0,0"
+                                    Visibility="{Binding RestoreLoading, Converter={StaticResource BoolToVis}}">
+                            <ui:ProgressRing IsIndeterminate="True" Width="22" Height="22" Foreground="{DynamicResource Accent}" />
+                            <TextBlock Text="{Binding LoadingLabel}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                       FontSize="13" Foreground="{DynamicResource Text2}" />
+                        </StackPanel>
+                        <ItemsControl x:Name="RestoreList" ItemsSource="{Binding RestoreItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                                            CornerRadius="12" Padding="14,12" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5"
+                                                           VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+                                                <Border Background="{Binding ChipBackground}" CornerRadius="20" Padding="8,2"
+                                                        Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ChipText}" Style="{StaticResource ChipText}" />
+                                                </Border>
+                                                <TextBlock Text="{Binding RebootLabel}" FontSize="11" VerticalAlignment="Center"
+                                                           Margin="8,0,0,0" Foreground="{DynamicResource Text2}"
+                                                           Visibility="{Binding RequiresRestart, Converter={StaticResource BoolToVis}}" />
+                                            </StackPanel>
+                                            <ui:Button Grid.Column="1" Content="{Binding RevertLabel}" Command="{Binding RevertCommand}"
+                                                       Padding="12,6" VerticalAlignment="Center" Cursor="Hand" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="TxtBackupNote" FontSize="11.5" Foreground="{DynamicResource Muted}" Margin="0,14,0,0" TextWrapping="Wrap"
+                                   Text="Бэкапы реестра и точка восстановления Windows создаются автоматически перед изменениями." />
+                    </StackPanel>
+                    <StackPanel x:Name="PanelBios" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtBiosTitle" Text="Настройка BIOS/UEFI" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtBiosSub" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16"
+                                   Text="Рекомендации под твоё железо. BIOS программа не меняет — эти шаги нужно сделать вручную при загрузке (обычно клавиша Del/F2)." />
+                        <ItemsControl x:Name="BiosList"
+                                      ItemsSource="{Binding BiosItems}" ItemTemplate="{StaticResource AdviceCardTemplate}" />
+                    </StackPanel>
+                    <StackPanel x:Name="PanelSettings" Visibility="Collapsed" MaxWidth="900" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtSettingsTitle" Text="Настройки" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtSettingsSub" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16"
+                                   Text="Автоматизация: пусть Source2Boost сам держит оптимизацию и включает игровой режим при старте CS2." />
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16,10">
+                            <StackPanel>
+                                <Grid Margin="0,3,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtAutoStartTitle" Text="Запускать с Windows" FontWeight="SemiBold" FontSize="13.5" Foreground="{DynamicResource Text}" />
+                                        <TextBlock x:Name="TxtAutoStartDesc" TextWrapping="Wrap" FontSize="11.5" Foreground="{DynamicResource Text2}" Margin="0,2,14,0"
+                                                   Text="Тихо стартует при входе (свёрнутым), чтобы следить за запуском CS2." />
+                                    </StackPanel>
+                                    <ui:ToggleSwitch x:Name="AutoStartToggle" Grid.Column="1" VerticalAlignment="Center" Click="AutoStartToggle_Click" />
+                                </Grid>
+                                <Border Height="1" Background="{DynamicResource Line}" Margin="0,10,0,10" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtAutoGameTitle" Text="Авто-режим при старте CS2" FontWeight="SemiBold" FontSize="13.5" Foreground="{DynamicResource Text}" />
+                                        <TextBlock x:Name="TxtAutoGameDesc" TextWrapping="Wrap" FontSize="11.5" Foreground="{DynamicResource Text2}" Margin="0,2,14,0"
+                                                   Text="Когда запускаешь CS2: включает Игровой фокус и заново применяет твики, которые Windows могла сбросить (службы). После выхода из игры всё возвращает." />
+                                    </StackPanel>
+                                    <ui:ToggleSwitch x:Name="AutoGameToggle" Grid.Column="1" VerticalAlignment="Center" Click="AutoGameToggle_Click" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Обновления -->
+                        <TextBlock x:Name="TxtUpdatesTitle" Text="Обновления" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Text}" Margin="0,20,0,8" />
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtUpdateVersion" Text="Версия 1.1.0" FontWeight="SemiBold" FontSize="13.5" Foreground="{DynamicResource Text}" />
+                                    <TextBlock x:Name="TxtUpdateStatus" TextWrapping="Wrap" FontSize="11.5" Foreground="{DynamicResource Text2}" Margin="0,2,14,0"
+                                               Text="Нажми «Проверить», чтобы узнать, есть ли новая версия." />
+                                </StackPanel>
+                                <ui:Button x:Name="BtnCheckUpdate" Grid.Column="1" VerticalAlignment="Center" Content="Проверить" Appearance="Secondary" Click="CheckUpdate_Click" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Стартовый оверлей загрузки: окно появляется мгновенно, детект железа идёт в фоне.
+                 Сплошной фон (Bg) полностью перекрывает контент — под спиннером ничего не «просвечивает».
+                 Анимация: плавное появление + «дышащий» логотип + вращающееся акцентное кольцо. -->
+            <Border x:Name="PanelLoading" Grid.Column="1" Background="{DynamicResource Bg}" Visibility="Collapsed">
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="Border.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <!-- Появление всей группы -->
+                                <DoubleAnimation Storyboard.TargetName="LoadGroup" Storyboard.TargetProperty="Opacity"
+                                                 From="0" To="1" Duration="0:0:0.5" />
+                                <!-- «Дыхание» бейджа логотипа (мягкий spring-подобный пульс) -->
+                                <DoubleAnimation Storyboard.TargetName="LoadBadgeScale" Storyboard.TargetProperty="ScaleX"
+                                                 From="0.94" To="1.06" Duration="0:0:1.1" AutoReverse="True" RepeatBehavior="Forever">
+                                    <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetName="LoadBadgeScale" Storyboard.TargetProperty="ScaleY"
+                                                 From="0.94" To="1.06" Duration="0:0:1.1" AutoReverse="True" RepeatBehavior="Forever">
+                                    <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <!-- Пульс подписи статуса -->
+                                <DoubleAnimation Storyboard.TargetName="TxtLoading" Storyboard.TargetProperty="Opacity"
+                                                 From="0.45" To="1" Duration="0:0:0.9" AutoReverse="True" RepeatBehavior="Forever">
+                                    <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <StackPanel x:Name="LoadGroup" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid Width="132" Height="132" HorizontalAlignment="Center">
+                        <!-- Вращающееся акцентное кольцо -->
+                        <ui:ProgressRing IsIndeterminate="True" Width="132" Height="132"
+                                         Foreground="{DynamicResource Accent}" />
+                        <!-- «Дышащий» бейдж с логотипом-спидометром -->
+                        <Border Width="80" Height="80" CornerRadius="22"
+                                Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="2"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="LoadBadgeScale" />
+                            </Border.RenderTransform>
+                            <ui:SymbolIcon Symbol="Gauge24" FontSize="42" Foreground="{DynamicResource Accent}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+                    <TextBlock Text="Source2Boost" FontSize="21" FontWeight="Bold" Margin="0,26,0,0"
+                               HorizontalAlignment="Center" Foreground="{DynamicResource Text}" />
+                    <TextBlock x:Name="TxtLoading" Text="Сканирую систему…" Margin="0,7,0,0"
+                               HorizontalAlignment="Center" FontSize="13.5" Foreground="{DynamicResource Text2}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>
+

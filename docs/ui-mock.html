@@ -1,0 +1,774 @@
+<style>
+  :root {
+    /* warm neutrals with an ignition bias — light theme */
+    --bg: #f4efe8;
+    --bg-grad-1: rgba(255,106,43,0.10);
+    --bg-grad-2: rgba(255,165,61,0.06);
+    --surface: #ffffff;
+    --surface-2: #faf5ee;
+    --elevated: #ffffff;
+    --border: #e7ddd0;
+    --border-strong: #d6c9b8;
+    --text: #1c1710;
+    --text-2: #5a4f42;
+    --muted: #8a7d6c;
+    --accent: #e0561c;
+    --accent-2: #f2922a;
+    --accent-soft: rgba(224,86,28,0.10);
+    --good: #2a9d5b;
+    --good-soft: rgba(42,157,91,0.12);
+    --warn: #c98a00;
+    --warn-soft: rgba(201,138,0,0.14);
+    --crit: #e5484d;
+    --crit-soft: rgba(229,72,77,0.12);
+    --shadow: 0 24px 60px -20px rgba(60,35,15,0.30), 0 2px 8px -2px rgba(60,35,15,0.12);
+    --shadow-sm: 0 1px 2px rgba(60,35,15,0.08), 0 4px 12px -6px rgba(60,35,15,0.14);
+    --ring: rgba(224,86,28,0.45);
+    --mono: "Cascadia Code","Cascadia Mono","SF Mono",ui-monospace,"Consolas",monospace;
+    --ui: "Segoe UI Variable Display","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Roboto",sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14110d;
+      --bg-grad-1: rgba(255,106,43,0.16);
+      --bg-grad-2: rgba(255,165,61,0.10);
+      --surface: #1d1811;
+      --surface-2: #17130d;
+      --elevated: #241e16;
+      --border: #332b20;
+      --border-strong: #443a2c; /* raised */
+      --text: #f3ede2;
+      --text-2: #bcae9b;
+      --muted: #8d8069;
+      --accent: #ff6a2b;
+      --accent-2: #ffa53d;
+      --accent-soft: rgba(255,106,43,0.16);
+      --good: #45d68a;
+      --good-soft: rgba(69,214,138,0.15);
+      --warn: #f5c53d;
+      --warn-soft: rgba(245,197,61,0.16);
+      --crit: #ff6b6f;
+      --crit-soft: rgba(255,107,111,0.15);
+      --shadow: 0 30px 80px -24px rgba(0,0,0,0.72), 0 2px 10px -2px rgba(0,0,0,0.5);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4), 0 6px 16px -8px rgba(0,0,0,0.6);
+      --ring: rgba(255,106,43,0.55);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#f4efe8;--bg-grad-1:rgba(255,106,43,0.10);--bg-grad-2:rgba(255,165,61,0.06);--surface:#fff;--surface-2:#faf5ee;--elevated:#fff;--border:#e7ddd0;--border-strong:#d6c9b8;--text:#1c1710;--text-2:#5a4f42;--muted:#8a7d6c;--accent:#e0561c;--accent-2:#f2922a;--accent-soft:rgba(224,86,28,0.10);--good:#2a9d5b;--good-soft:rgba(42,157,91,0.12);--warn:#c98a00;--warn-soft:rgba(201,138,0,0.14);--crit:#e5484d;--crit-soft:rgba(229,72,77,0.12);--shadow:0 24px 60px -20px rgba(60,35,15,0.30),0 2px 8px -2px rgba(60,35,15,0.12);--shadow-sm:0 1px 2px rgba(60,35,15,0.08),0 4px 12px -6px rgba(60,35,15,0.14);--ring:rgba(224,86,28,0.45);
+  }
+  :root[data-theme="dark"] {
+    --bg:#14110d;--bg-grad-1:rgba(255,106,43,0.16);--bg-grad-2:rgba(255,165,61,0.10);--surface:#1d1811;--surface-2:#17130d;--elevated:#241e16;--border:#332b20;--border-strong:#443a2c;--text:#f3ede2;--text-2:#bcae9b;--muted:#8d8069;--accent:#ff6a2b;--accent-2:#ffa53d;--accent-soft:rgba(255,106,43,0.16);--good:#45d68a;--good-soft:rgba(69,214,138,0.15);--warn:#f5c53d;--warn-soft:rgba(245,197,61,0.16);--crit:#ff6b6f;--crit-soft:rgba(255,107,111,0.15);--shadow:0 30px 80px -24px rgba(0,0,0,0.72),0 2px 10px -2px rgba(0,0,0,0.5);--shadow-sm:0 1px 2px rgba(0,0,0,0.4),0 6px 16px -8px rgba(0,0,0,0.6);--ring:rgba(255,106,43,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .stage {
+    font-family: var(--ui);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(1200px 700px at 12% -8%, var(--bg-grad-1), transparent 60%),
+      radial-gradient(1000px 600px at 108% 110%, var(--bg-grad-2), transparent 55%),
+      var(--bg);
+  }
+
+  /* ---- window shell ---- */
+  .app {
+    width: 100%; max-width: 1080px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 44px 1fr;
+  }
+  .titlebar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px 0 16px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, var(--accent) 8%), var(--surface));
+    border-bottom: 1px solid var(--border);
+    -webkit-user-select: none; user-select: none;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; letter-spacing: .2px; font-size: 13.5px; }
+  .brand .logo {
+    width: 20px; height: 20px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; color: #fff; box-shadow: 0 2px 8px -2px var(--ring);
+  }
+  .brand small { color: var(--muted); font-weight: 500; font-size: 11px; }
+  .win-dots { margin-left: auto; display: flex; gap: 8px; }
+  .win-dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--border-strong); }
+  .win-dots span:nth-child(3){ background: color-mix(in srgb, var(--crit) 60%, var(--border-strong)); }
+
+  .body { display: grid; grid-template-columns: 216px 1fr; min-height: 620px; }
+
+  /* ---- sidebar ---- */
+  .side {
+    background: var(--surface-2);
+    border-right: 1px solid var(--border);
+    padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .side .grp { font-size: 10.5px; text-transform: uppercase; letter-spacing: .9px; color: var(--muted); margin: 12px 8px 4px; }
+  .nav {
+    display: flex; align-items: center; gap: 11px;
+    padding: 9px 11px; border-radius: 9px; cursor: pointer;
+    color: var(--text-2); font-size: 13.5px; font-weight: 550;
+    border: 1px solid transparent; transition: background .14s, color .14s;
+  }
+  .nav svg { width: 18px; height: 18px; flex: none; opacity: .85; }
+  .nav:hover { background: var(--accent-soft); color: var(--text); }
+  .nav.active { background: var(--accent-soft); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); font-weight: 650; }
+  .nav.active svg { opacity: 1; }
+  .nav .count { margin-left: auto; font-size: 11px; font-family: var(--mono); background: var(--accent); color:#fff; border-radius: 20px; padding: 1px 7px; }
+  .side .spacer { flex: 1; }
+  .side .foot { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+
+  .seg { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 3px; gap: 2px; }
+  .seg button { flex: 1; border: 0; background: transparent; color: var(--text-2); font: inherit; font-size: 12px; font-weight: 600; padding: 5px 0; border-radius: 6px; cursor: pointer; }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .toggle-theme { display:flex; align-items:center; gap:9px; padding: 8px 10px; border:1px solid var(--border); border-radius:9px; background: var(--surface); cursor:pointer; color: var(--text-2); font-size:12.5px; font-weight:600; }
+  .toggle-theme svg { width:16px;height:16px; }
+
+  /* ---- main ---- */
+  .main { padding: 24px 28px 30px; overflow: auto; }
+  .screen { display: none; animation: fade .22s ease; }
+  .screen.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce){ .screen.active{ animation: none;} }
+
+  .h1 { font-size: 21px; font-weight: 750; letter-spacing: -.2px; margin: 0; text-wrap: balance; }
+  .sub { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+  .head-row { display:flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+
+  .card { background: var(--elevated); border: 1px solid var(--border); border-radius: 13px; padding: 16px; box-shadow: var(--shadow-sm); }
+  .grid { display: grid; gap: 14px; }
+  .g-spec { grid-template-columns: repeat(4, 1fr); }
+  .g-2 { grid-template-columns: 1.35fr 1fr; }
+  @media (max-width: 900px){ .g-spec{ grid-template-columns: repeat(2,1fr);} .g-2{ grid-template-columns: 1fr;} }
+
+  .spec .top { display:flex; align-items:center; justify-content:space-between; }
+  .spec .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .spec .val { font-size: 15.5px; font-weight: 700; margin-top: 6px; }
+  .spec .val .u { font-family: var(--mono); }
+  .spec .note { font-size: 11.5px; color: var(--text-2); margin-top: 3px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display:inline-block; }
+  .dot.ok{background:var(--good);} .dot.warn{background:var(--warn);} .dot.crit{background:var(--crit);}
+
+  .chip { display:inline-flex; align-items:center; gap:6px; font-size: 11px; font-weight: 650; padding: 3px 9px; border-radius: 20px; letter-spacing:.2px; }
+  .chip.ok{ background: var(--good-soft); color: var(--good);}
+  .chip.warn{ background: var(--warn-soft); color: var(--warn);}
+  .chip.crit{ background: var(--crit-soft); color: var(--crit);}
+  .chip.info{ background: var(--accent-soft); color: var(--accent);}
+
+  .diag { display:flex; gap: 14px; align-items:center; padding: 14px 16px; border-radius: 12px; background: linear-gradient(100deg, var(--accent-soft), transparent 70%); border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border)); margin-bottom: 18px; }
+  .diag .ic { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; display:grid; place-items:center; flex:none; }
+  .diag b { font-weight: 700; }
+  .diag p { margin: 2px 0 0; font-size: 12.5px; color: var(--text-2); }
+
+  /* hero boost */
+  .hero { display:grid; grid-template-columns: 1fr auto; gap: 20px; align-items:center; }
+  .fps-wrap { display:flex; gap: 26px; align-items:flex-end; }
+  .fps-block .k { font-size: 11px; text-transform:uppercase; letter-spacing:.6px; color: var(--muted); }
+  .fps-block .n { font-family: var(--mono); font-weight: 700; font-size: 40px; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .fps-block .n.after { color: var(--good); }
+  .fps-block .n small { font-size: 15px; color: var(--muted); }
+  .arrow { color: var(--muted); align-self:center; margin-bottom: 8px; }
+  .spark { width: 100%; height: 56px; display:block; margin-top: 10px; }
+
+  .btn {
+    border: 0; border-radius: 11px; cursor: pointer; font: inherit; font-weight: 700; font-size: 14px;
+    padding: 13px 22px; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 10px 24px -10px var(--ring); transition: transform .1s, box-shadow .15s; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:9px;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 30px -10px var(--ring); }
+  .btn:active { transform: translateY(0); }
+  .btn.ghost { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); box-shadow: none; }
+  .btn.sm { padding: 8px 14px; font-size: 12.5px; border-radius: 9px; }
+  .btn:focus-visible, .nav:focus-visible, .seg button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+  .score { position: relative; width: 132px; height: 132px; }
+  .score .lab { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
+  .score .lab .num { font-family: var(--mono); font-weight: 700; font-size: 30px; }
+  .score .lab .cap { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing:.6px; }
+
+  /* profile cards */
+  .profiles { display:grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 4px 0 18px; }
+  @media (max-width:900px){ .profiles{ grid-template-columns:1fr;} }
+  .prof { border:1px solid var(--border); border-radius: 12px; padding: 14px; cursor:pointer; background: var(--surface); transition: border-color .15s, background .15s; }
+  .prof:hover{ border-color: var(--border-strong); }
+  .prof.sel { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+  .prof .pt { display:flex; align-items:center; justify-content:space-between; font-weight:700; }
+  .prof .pd { font-size: 12px; color: var(--text-2); margin-top: 6px; line-height:1.45; }
+
+  /* tweak rows */
+  .cat { font-size: 12px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); margin: 20px 2px 8px; font-weight:700; }
+  .tweak { display:flex; align-items:center; gap: 14px; padding: 12px 14px; border:1px solid var(--border); border-radius: 11px; background: var(--surface); margin-bottom: 8px; }
+  .tweak .info { flex:1; min-width:0; }
+  .tweak .tn { font-weight: 650; font-size: 13.5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .tweak .td { font-size: 12px; color: var(--text-2); margin-top: 3px; }
+  .tweak .imp { font-family: var(--mono); font-size: 11.5px; color: var(--good); flex:none; }
+  .sw { --w:42px; width: var(--w); height: 24px; border-radius: 20px; background: var(--border-strong); position:relative; cursor:pointer; flex:none; transition: background .16s; border:0; padding:0; }
+  .sw::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: left .16s; }
+  .sw.on { background: var(--accent); }
+  .sw.on::after { left: 21px; }
+  .sw:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+  /* monitor */
+  .stat-row { display:grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+  @media (max-width:900px){ .stat-row{ grid-template-columns: repeat(2,1fr);} }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+  .stat .v { font-family: var(--mono); font-weight:700; font-size: 26px; margin-top:4px; font-variant-numeric: tabular-nums; }
+  .stat .d { font-size: 11.5px; margin-top:2px; }
+  .up { color: var(--good);} .down{ color: var(--crit);}
+  #ftChart { width: 100%; height: 200px; display:block; }
+  .legend { display:flex; gap:16px; font-size:12px; color:var(--text-2); margin-top:8px; align-items:center; }
+  .legend i { width:14px; height:3px; border-radius:2px; display:inline-block; vertical-align:middle; margin-right:6px; }
+
+  /* code preview */
+  pre.code { background: var(--surface-2); border:1px solid var(--border); border-radius: 11px; padding: 14px 16px; font-family: var(--mono); font-size: 12px; color: var(--text); overflow-x:auto; line-height:1.6; margin:0; }
+  .code .c { color: var(--muted); }
+  .code .k { color: var(--accent); }
+
+  .row-2 { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  @media (max-width:900px){ .row-2{ grid-template-columns:1fr;} }
+
+  /* restore list */
+  .rp { display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--border); border-radius:11px; background:var(--surface); margin-bottom:8px; }
+  .rp .ic { width:34px;height:34px;border-radius:9px; background: var(--accent-soft); color: var(--accent); display:grid; place-items:center; flex:none; }
+  .rp .m { flex:1; }
+  .rp .m b { font-size:13.5px; } .rp .m span{ font-size:12px; color:var(--muted); font-family:var(--mono); }
+
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px); opacity:0; pointer-events:none;
+    background: var(--text); color: var(--surface); padding: 11px 18px; border-radius: 10px; font-size:13px; font-weight:600; box-shadow: var(--shadow); transition: opacity .2s, transform .2s; z-index: 50; }
+  .toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="stage">
+  <div class="app" role="application" aria-label="Source2Boost">
+    <div class="titlebar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 7-2.1 2.1L12 7.2 7.1 12.1 5 10z M12 11l7 7-2.1 2.1L12 15.2 7.1 20.1 5 18z" fill="currentColor"/></svg>
+        </span>
+        Source2Boost <small>v0.1 · mock</small>
+      </div>
+      <div class="win-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+
+    <div class="body">
+      <!-- SIDEBAR -->
+      <aside class="side">
+        <div class="grp" data-i18n="nav.main">Основное</div>
+        <div class="nav active" data-screen="dash" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+          <span data-i18n="nav.dash">Обзор</span>
+        </div>
+        <div class="nav" data-screen="boost" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 7-2.1 2.1L12 7.2 7.1 12.1 5 10z M12 11l7 7-2.1 2.1L12 15.2 7.1 20.1 5 18z"/></svg>
+          <span data-i18n="nav.boost">Оптимизация</span>
+        </div>
+        <div class="nav" data-screen="tweaks" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><circle cx="4" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="20" cy="14" r="2"/></svg>
+          <span data-i18n="nav.tweaks">Твики</span>
+          <span class="count" id="twkCount">14</span>
+        </div>
+        <div class="nav" data-screen="monitor" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          <span data-i18n="nav.monitor">Мониторинг</span>
+        </div>
+
+        <div class="grp" data-i18n="nav.game">Игра</div>
+        <div class="nav" data-screen="cs2" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M7 12h3M8.5 10.5v3"/><circle cx="16" cy="11" r="1"/><circle cx="18" cy="14" r="1"/></svg>
+          <span data-i18n="nav.cs2">Настройки CS2</span>
+        </div>
+        <div class="nav" data-screen="restore" tabindex="0" role="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          <span data-i18n="nav.restore">Откат</span>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="foot">
+          <div class="seg" role="group" aria-label="Language">
+            <button data-lang="ru" class="on">RU</button>
+            <button data-lang="uk">UA</button>
+            <button data-lang="en">EN</button>
+          </div>
+          <button class="toggle-theme" id="themeBtn">
+            <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <span data-i18n="theme.toggle">Тема</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <!-- DASHBOARD -->
+        <section class="screen active" data-name="dash">
+          <div class="head-row">
+            <div>
+              <h1 class="h1" data-i18n="dash.title">Обзор системы</h1>
+              <p class="sub" data-i18n="dash.sub">Железо просканировано. Вот диагноз и что можно выжать.</p>
+            </div>
+            <span class="chip ok"><span class="dot ok"></span><span data-i18n="dash.scanned">Скан завершён</span></span>
+          </div>
+
+          <div class="diag">
+            <div class="ic" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            </div>
+            <div>
+              <b data-i18n="dash.diag.t">Упор в процессор + рваный фреймтайм</b>
+              <p data-i18n="dash.diag.d">CS2 грузит 1–2 ядра i7-6700 в потолок, память DDR3-1866 тормозит движок, а на 180 Гц мониторе 100–140 FPS дают неровную картинку. Цель: поднять и стабилизировать фреймтайм.</p>
+            </div>
+          </div>
+
+          <div class="grid g-spec" style="margin-bottom:14px">
+            <div class="card spec">
+              <div class="top"><span class="lbl">CPU</span><span class="dot crit" title="bottleneck"></span></div>
+              <div class="val">i7-6700</div>
+              <div class="note" data-i18n="spec.cpu">4я/8п · 3.4 ГГц · главный лимит</div>
+            </div>
+            <div class="card spec">
+              <div class="top"><span class="lbl">GPU</span><span class="dot ok"></span></div>
+              <div class="val">GTX 1650S</div>
+              <div class="note" data-i18n="spec.gpu">загрузка ~50% · есть запас</div>
+            </div>
+            <div class="card spec">
+              <div class="top"><span class="lbl">RAM</span><span class="dot warn"></span></div>
+              <div class="val">DDR3 <span class="u">1866</span></div>
+              <div class="note" data-i18n="spec.ram">разнокалиберный набор · узкое место</div>
+            </div>
+            <div class="card spec">
+              <div class="top"><span class="lbl" data-i18n="spec.mon">Монитор</span><span class="dot ok"></span></div>
+              <div class="val"><span class="u">180</span> Гц</div>
+              <div class="note">1920×1080 · <span data-i18n="spec.monok">режим активен</span></div>
+            </div>
+          </div>
+
+          <div class="grid g-2">
+            <div class="card">
+              <div class="hero">
+                <div style="min-width:0">
+                  <div class="fps-wrap">
+                    <div class="fps-block">
+                      <div class="k" data-i18n="dash.now">Сейчас</div>
+                      <div class="n">118<small> fps</small></div>
+                    </div>
+                    <div class="arrow" aria-hidden="true">
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </div>
+                    <div class="fps-block">
+                      <div class="k" data-i18n="dash.potential">Потенциал</div>
+                      <div class="n after">165<small> fps</small></div>
+                    </div>
+                  </div>
+                  <canvas class="spark" id="spark" width="440" height="56" aria-hidden="true"></canvas>
+                  <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+                    <button class="btn" id="boostBtn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l7 7-2.1 2.1L12 7.2 7.1 12.1 5 10z M12 11l7 7-2.1 2.1L12 15.2 7.1 20.1 5 18z"/></svg>
+                      <span data-i18n="dash.optimize">Оптимизировать</span>
+                    </button>
+                    <button class="btn ghost sm" data-screen="tweaks" data-nav="1"><span data-i18n="dash.advanced">Настроить вручную</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="display:grid; place-items:center; text-align:center">
+              <div>
+                <svg class="score" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="10"/>
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="var(--warn)" stroke-width="10" stroke-linecap="round"
+                    stroke-dasharray="327" stroke-dashoffset="150" transform="rotate(-90 60 60)"/>
+                  <foreignObject x="0" y="0" width="120" height="120"><div class="lab" xmlns="http://www.w3.org/1999/xhtml"><div><div class="num">54</div><div class="cap" data-i18n="dash.score">Оценка</div></div></div></foreignObject>
+                </svg>
+                <p class="sub" style="margin-top:10px; max-width:180px" data-i18n="dash.scorenote">До оптимизации. После — ждём ~82.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- BOOST (one-click) -->
+        <section class="screen" data-name="boost">
+          <div class="head-row">
+            <div>
+              <h1 class="h1" data-i18n="boost.title">Оптимизация в один клик</h1>
+              <p class="sub" data-i18n="boost.sub">Выбери профиль — применим весь набор твиков сразу. Всё с бэкапом и откатом.</p>
+            </div>
+          </div>
+          <div class="profiles">
+            <div class="prof" data-prof="safe">
+              <div class="pt"><span data-i18n="boost.safe">Безопасный</span><span class="chip ok" data-i18n="risk.none">риск 0</span></div>
+              <div class="pd" data-i18n="boost.safe.d">Только полностью обратимые твики. Скромный, но гарантированный прирост. Для друзей по умолчанию.</div>
+            </div>
+            <div class="prof sel" data-prof="max">
+              <div class="pt"><span data-i18n="boost.max">Максимум</span><span class="chip warn" data-i18n="risk.high">агрессивно</span></div>
+              <div class="pd" data-i18n="boost.max.d">Глубокие твики CPU, памяти, служб и драйвера. Больше FPS, точка восстановления перед стартом.</div>
+            </div>
+            <div class="prof" data-prof="bench">
+              <div class="pt"><span data-i18n="boost.bench">Бенчмарк</span><span class="chip info" data-i18n="boost.temp">временно</span></div>
+              <div class="pd" data-i18n="boost.bench.d">Предельный профиль для замера. Авто-откат после теста «до/после».</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+              <b data-i18n="boost.willdo">Что применим (профиль «Максимум»)</b>
+              <span class="chip info" id="planCount">14 твиков</span>
+            </div>
+            <div id="planList"></div>
+            <div style="display:flex; gap:10px; margin-top:16px; align-items:center; flex-wrap:wrap">
+              <button class="btn" id="applyBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l7 7-2.1 2.1L12 7.2 7.1 12.1 5 10z M12 11l7 7-2.1 2.1L12 15.2 7.1 20.1 5 18z"/></svg>
+                <span data-i18n="boost.apply">Применить всё</span>
+              </button>
+              <span class="sub" data-i18n="boost.restorehint">Перед применением создаётся точка восстановления Windows.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- TWEAKS (advanced) -->
+        <section class="screen" data-name="tweaks">
+          <div class="head-row">
+            <div>
+              <h1 class="h1" data-i18n="tweaks.title">Твики вручную</h1>
+              <p class="sub" data-i18n="tweaks.sub">Включай по одному. У каждого — уровень риска и ожидаемый эффект.</p>
+            </div>
+            <span class="chip info"><span id="onCount">9</span>&nbsp;<span data-i18n="tweaks.on">включено</span></span>
+          </div>
+          <div id="tweakGroups"></div>
+        </section>
+
+        <!-- MONITOR -->
+        <section class="screen" data-name="monitor">
+          <div class="head-row">
+            <div>
+              <h1 class="h1" data-i18n="mon.title">Мониторинг фреймтайма</h1>
+              <p class="sub" data-i18n="mon.sub">Реальные кадры из движка (PresentMon). Сравнение «до / после».</p>
+            </div>
+            <button class="btn ghost sm" id="replayBtn"><span data-i18n="mon.replay">Повторить замер</span></button>
+          </div>
+          <div class="stat-row">
+            <div class="card stat"><div class="k" data-i18n="mon.avg">Средний FPS</div><div class="v">165</div><div class="d up">▲ 47 <span data-i18n="mon.vs">против 118</span></div></div>
+            <div class="card stat"><div class="k">1% low</div><div class="v">131</div><div class="d up">▲ 57 <span data-i18n="mon.vs">против 74</span></div></div>
+            <div class="card stat"><div class="k">0.1% low</div><div class="v">104</div><div class="d up">▲ 61</div></div>
+            <div class="card stat"><div class="k" data-i18n="mon.ft">Фреймтайм</div><div class="v">6.1<small style="font-size:14px"> ms</small></div><div class="d up" data-i18n="mon.smooth">ровнее в 2.3×</div></div>
+          </div>
+          <div class="card">
+            <canvas id="ftChart" width="900" height="200"></canvas>
+            <div class="legend">
+              <span><i style="background:var(--crit)"></i><span data-i18n="mon.before">До (рвано)</span></span>
+              <span><i style="background:var(--good)"></i><span data-i18n="mon.after">После (ровно)</span></span>
+              <span style="margin-left:auto; font-family:var(--mono)" data-i18n="mon.target">цель: 5.5 ms @ 180 Гц</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- CS2 -->
+        <section class="screen" data-name="cs2">
+          <div class="head-row">
+            <div>
+              <h1 class="h1" data-i18n="cs2.title">Настройки CS2</h1>
+              <p class="sub" data-i18n="cs2.sub">Сгенерировано под твоё железо и 180 Гц. Без мусорных CSGO-флагов.</p>
+            </div>
+            <span class="chip ok"><span class="dot ok"></span>C:\…\Counter-Strike Global Offensive</span>
+          </div>
+          <div class="row-2">
+            <div class="card">
+              <b data-i18n="cs2.launch">Параметры запуска</b>
+              <pre class="code" style="margin-top:10px">-novid -console -nojoy <span class="k">-high</span> -fullscreen <span class="k">-freq 180</span> +fps_max 0 -softparticlesdefaultoff +exec autoexec</pre>
+              <button class="btn ghost sm" style="margin-top:12px" data-copy="1"><span data-i18n="cs2.copy">Скопировать</span></button>
+            </div>
+            <div class="card">
+              <b>autoexec.cfg</b>
+              <pre class="code" style="margin-top:10px"><span class="c">// FPS / фреймтайм</span>
+fps_max <span class="k">0</span>
+engine_no_focus_sleep <span class="k">0</span>
+<span class="c">// сеть (sub-tick)</span>
+rate <span class="k">786432</span>
+cl_forcepreload <span class="k">1</span>
+<span class="c">// разгрузка рендера</span>
+cl_disable_ragdolls <span class="k">1</span>
+muzzleflash_light <span class="k">0</span></pre>
+            </div>
+          </div>
+          <div class="card" style="margin-top:14px; display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap">
+            <span class="sub" data-i18n="cs2.writehint">Запишем autoexec.cfg в папку cfg и подставим параметры запуска в Steam.</span>
+            <button class="btn"><span data-i18n="cs2.write">Применить конфиг</span></button>
+          </div>
+        </section>
+
+        <!-- RESTORE -->
+        <section class="screen" data-name="restore">
+          <div class="head-row">
+            <div>
+              <h1 class="h1" data-i18n="rest.title">Откат изменений</h1>
+              <p class="sub" data-i18n="rest.sub">Любой снимок можно вернуть в один клик. Ничего не теряется.</p>
+            </div>
+          </div>
+          <div class="rp">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+            <div class="m"><b data-i18n="rest.p1">Перед профилем «Максимум»</b><br><span>2026-07-20 23:14 · 14 changes · registry + restore point</span></div>
+            <button class="btn ghost sm"><span data-i18n="rest.revert">Откатить</span></button>
+          </div>
+          <div class="rp">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+            <div class="m"><b data-i18n="rest.p2">Сетевые твики</b><br><span>2026-07-20 22:58 · 6 changes · registry</span></div>
+            <button class="btn ghost sm"><span data-i18n="rest.revert">Откатить</span></button>
+          </div>
+          <div class="rp">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+            <div class="m"><b data-i18n="rest.p3">Заводское состояние Windows</b><br><span>baseline · всегда доступно</span></div>
+            <button class="btn ghost sm"><span data-i18n="rest.revert">Откатить</span></button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+
+  /* ---------- i18n ---------- */
+  const I18N = {
+    ru: {
+      "nav.main":"Основное","nav.dash":"Обзор","nav.boost":"Оптимизация","nav.tweaks":"Твики","nav.monitor":"Мониторинг",
+      "nav.game":"Игра","nav.cs2":"Настройки CS2","nav.restore":"Откат","theme.toggle":"Тема",
+      "dash.title":"Обзор системы","dash.sub":"Железо просканировано. Вот диагноз и что можно выжать.","dash.scanned":"Скан завершён",
+      "dash.diag.t":"Упор в процессор + рваный фреймтайм","dash.diag.d":"CS2 грузит 1–2 ядра i7-6700 в потолок, память DDR3-1866 тормозит движок, а на 180 Гц мониторе 100–140 FPS дают неровную картинку. Цель: поднять и стабилизировать фреймтайм.",
+      "spec.cpu":"4я/8п · 3.4 ГГц · главный лимит","spec.gpu":"загрузка ~50% · есть запас","spec.ram":"разнокалиберный набор · узкое место","spec.mon":"Монитор","spec.monok":"режим активен",
+      "dash.now":"Сейчас","dash.potential":"Потенциал","dash.optimize":"Оптимизировать","dash.advanced":"Настроить вручную","dash.score":"Оценка","dash.scorenote":"До оптимизации. После — ждём ~82.",
+      "boost.title":"Оптимизация в один клик","boost.sub":"Выбери профиль — применим весь набор твиков сразу. Всё с бэкапом и откатом.",
+      "boost.safe":"Безопасный","boost.max":"Максимум","boost.bench":"Бенчмарк","risk.none":"риск 0","risk.high":"агрессивно","boost.temp":"временно",
+      "boost.safe.d":"Только полностью обратимые твики. Скромный, но гарантированный прирост. Для друзей по умолчанию.",
+      "boost.max.d":"Глубокие твики CPU, памяти, служб и драйвера. Больше FPS, точка восстановления перед стартом.",
+      "boost.bench.d":"Предельный профиль для замера. Авто-откат после теста «до/после».",
+      "boost.willdo":"Что применим","boost.apply":"Применить всё","boost.restorehint":"Перед применением создаётся точка восстановления Windows.",
+      "tweaks.title":"Твики вручную","tweaks.sub":"Включай по одному. У каждого — уровень риска и ожидаемый эффект.","tweaks.on":"включено",
+      "mon.title":"Мониторинг фреймтайма","mon.sub":"Реальные кадры из движка (PresentMon). Сравнение «до / после».","mon.replay":"Повторить замер",
+      "mon.avg":"Средний FPS","mon.vs":"против","mon.ft":"Фреймтайм","mon.smooth":"ровнее в 2.3×","mon.before":"До (рвано)","mon.after":"После (ровно)","mon.target":"цель: 5.5 ms @ 180 Гц",
+      "cs2.title":"Настройки CS2","cs2.sub":"Сгенерировано под твоё железо и 180 Гц. Без мусорных CSGO-флагов.","cs2.launch":"Параметры запуска","cs2.copy":"Скопировать","cs2.writehint":"Запишем autoexec.cfg в папку cfg и подставим параметры запуска в Steam.","cs2.write":"Применить конфиг",
+      "rest.title":"Откат изменений","rest.sub":"Любой снимок можно вернуть в один клик. Ничего не теряется.","rest.revert":"Откатить",
+      "rest.p1":"Перед профилем «Максимум»","rest.p2":"Сетевые твики","rest.p3":"Заводское состояние Windows",
+      "cat.frame":"Фреймтайм и латентность","cat.nvidia":"NVIDIA","cat.cpu":"CPU и питание","cat.mem":"Память","cat.svc":"Службы","cat.net":"Сеть",
+      "toast.applied":"Готово! Применено 14 твиков · точка восстановления создана","toast.copied":"Скопировано в буфер обмена","toast.reverted":"Откат выполнен","toast.applying":"Применяю твики…"
+    },
+    uk: {
+      "nav.main":"Основне","nav.dash":"Огляд","nav.boost":"Оптимізація","nav.tweaks":"Твіки","nav.monitor":"Моніторинг",
+      "nav.game":"Гра","nav.cs2":"Налаштування CS2","nav.restore":"Відкат","theme.toggle":"Тема",
+      "dash.title":"Огляд системи","dash.sub":"Залізо проскановане. Ось діагноз і що можна вичавити.","dash.scanned":"Скан завершено",
+      "dash.diag.t":"Упор у процесор + рваний фреймтайм","dash.diag.d":"CS2 вантажить 1–2 ядра i7-6700 у стелю, пам'ять DDR3-1866 гальмує рушій, а на 180 Гц моніторі 100–140 FPS дають нерівну картинку. Мета: підняти та стабілізувати фреймтайм.",
+      "spec.cpu":"4я/8п · 3.4 ГГц · головний ліміт","spec.gpu":"завантаження ~50% · є запас","spec.ram":"різнокаліберний набір · вузьке місце","spec.mon":"Монітор","spec.monok":"режим активний",
+      "dash.now":"Зараз","dash.potential":"Потенціал","dash.optimize":"Оптимізувати","dash.advanced":"Налаштувати вручну","dash.score":"Оцінка","dash.scorenote":"До оптимізації. Після — чекаємо ~82.",
+      "boost.title":"Оптимізація в один клік","boost.sub":"Обери профіль — застосуємо весь набір твіків одразу. Усе з бекапом і відкатом.",
+      "boost.safe":"Безпечний","boost.max":"Максимум","boost.bench":"Бенчмарк","risk.none":"ризик 0","risk.high":"агресивно","boost.temp":"тимчасово",
+      "boost.safe.d":"Лише повністю оборотні твіки. Скромний, але гарантований приріст. Для друзів за замовчуванням.",
+      "boost.max.d":"Глибокі твіки CPU, пам'яті, служб і драйвера. Більше FPS, точка відновлення перед стартом.",
+      "boost.bench.d":"Граничний профіль для заміру. Авто-відкат після тесту «до/після».",
+      "boost.willdo":"Що застосуємо","boost.apply":"Застосувати все","boost.restorehint":"Перед застосуванням створюється точка відновлення Windows.",
+      "tweaks.title":"Твіки вручну","tweaks.sub":"Вмикай по одному. У кожного — рівень ризику та очікуваний ефект.","tweaks.on":"увімкнено",
+      "mon.title":"Моніторинг фреймтайму","mon.sub":"Реальні кадри з рушія (PresentMon). Порівняння «до / після».","mon.replay":"Повторити замір",
+      "mon.avg":"Середній FPS","mon.vs":"проти","mon.ft":"Фреймтайм","mon.smooth":"рівніше у 2.3×","mon.before":"До (рвано)","mon.after":"Після (рівно)","mon.target":"ціль: 5.5 ms @ 180 Гц",
+      "cs2.title":"Налаштування CS2","cs2.sub":"Згенеровано під твоє залізо та 180 Гц. Без сміттєвих CSGO-прапорців.","cs2.launch":"Параметри запуску","cs2.copy":"Скопіювати","cs2.writehint":"Запишемо autoexec.cfg у теку cfg та підставимо параметри запуску в Steam.","cs2.write":"Застосувати конфіг",
+      "rest.title":"Відкат змін","rest.sub":"Будь-який знімок можна повернути в один клік. Нічого не втрачається.","rest.revert":"Відкотити",
+      "rest.p1":"Перед профілем «Максимум»","rest.p2":"Мережеві твіки","rest.p3":"Заводський стан Windows",
+      "cat.frame":"Фреймтайм і латентність","cat.nvidia":"NVIDIA","cat.cpu":"CPU і живлення","cat.mem":"Пам'ять","cat.svc":"Служби","cat.net":"Мережа",
+      "toast.applied":"Готово! Застосовано 14 твіків · точку відновлення створено","toast.copied":"Скопійовано в буфер обміну","toast.reverted":"Відкат виконано","toast.applying":"Застосовую твіки…"
+    },
+    en: {
+      "nav.main":"Main","nav.dash":"Overview","nav.boost":"Optimize","nav.tweaks":"Tweaks","nav.monitor":"Monitor",
+      "nav.game":"Game","nav.cs2":"CS2 Config","nav.restore":"Restore","theme.toggle":"Theme",
+      "dash.title":"System overview","dash.sub":"Hardware scanned. Here's the diagnosis and what we can squeeze out.","dash.scanned":"Scan complete",
+      "dash.diag.t":"CPU-bound + choppy frametime","dash.diag.d":"CS2 pins 1–2 cores of the i7-6700, DDR3-1866 memory starves the engine, and 100–140 FPS on a 180 Hz display looks uneven. Goal: raise and stabilize frametime.",
+      "spec.cpu":"4c/8t · 3.4 GHz · main limit","spec.gpu":"~50% load · headroom left","spec.ram":"mismatched kit · bottleneck","spec.mon":"Monitor","spec.monok":"mode active",
+      "dash.now":"Now","dash.potential":"Potential","dash.optimize":"Optimize","dash.advanced":"Tune manually","dash.score":"Score","dash.scorenote":"Before optimization. After — expect ~82.",
+      "boost.title":"One-click optimization","boost.sub":"Pick a profile — we apply the whole tweak set at once. All backed up and reversible.",
+      "boost.safe":"Safe","boost.max":"Maximum","boost.bench":"Benchmark","risk.none":"zero risk","risk.high":"aggressive","boost.temp":"temporary",
+      "boost.safe.d":"Fully reversible tweaks only. Modest but guaranteed gains. Default for friends.",
+      "boost.max.d":"Deep CPU, memory, services and driver tweaks. More FPS, restore point created first.",
+      "boost.bench.d":"Peak profile for measuring. Auto-reverts after the before/after test.",
+      "boost.willdo":"What we'll apply","boost.apply":"Apply all","boost.restorehint":"A Windows restore point is created before applying.",
+      "tweaks.title":"Manual tweaks","tweaks.sub":"Toggle them one by one. Each shows risk level and expected impact.","tweaks.on":"enabled",
+      "mon.title":"Frametime monitor","mon.sub":"Real frames from the engine (PresentMon). Before / after comparison.","mon.replay":"Re-run test",
+      "mon.avg":"Average FPS","mon.vs":"vs","mon.ft":"Frametime","mon.smooth":"2.3× smoother","mon.before":"Before (choppy)","mon.after":"After (smooth)","mon.target":"target: 5.5 ms @ 180 Hz",
+      "cs2.title":"CS2 config","cs2.sub":"Generated for your hardware and 180 Hz. No junk CSGO flags.","cs2.launch":"Launch options","cs2.copy":"Copy","cs2.writehint":"We'll write autoexec.cfg into the cfg folder and set launch options in Steam.","cs2.write":"Apply config",
+      "rest.title":"Restore changes","rest.sub":"Roll back any snapshot in one click. Nothing is lost.","rest.revert":"Revert",
+      "rest.p1":"Before Maximum profile","rest.p2":"Network tweaks","rest.p3":"Windows factory state",
+      "cat.frame":"Frametime & latency","cat.nvidia":"NVIDIA","cat.cpu":"CPU & power","cat.mem":"Memory","cat.svc":"Services","cat.net":"Network",
+      "toast.applied":"Done! 14 tweaks applied · restore point created","toast.copied":"Copied to clipboard","toast.reverted":"Reverted","toast.applying":"Applying tweaks…"
+    }
+  };
+  let lang = "ru";
+  const t = (k) => (I18N[lang][k] ?? k);
+
+  /* ---------- tweak data ---------- */
+  const TWEAKS = [
+    {cat:"cat.frame", on:true,  risk:"ok",   imp:"+ровность", ru:["Timer Resolution 0.5 мс","Держит системный таймер, пока открыт CS2 — ровнее фреймтайм"], uk:["Timer Resolution 0.5 мс","Тримає системний таймер, поки відкрито CS2 — рівніший фреймтайм"], en:["Timer Resolution 0.5 ms","Holds the system timer while CS2 runs — steadier frametime"]},
+    {cat:"cat.frame", on:true,  risk:"ok",   imp:"-латентность", ru:["Приоритет cs2.exe = High","Игровой поток получает больше процессорного времени"], uk:["Пріоритет cs2.exe = High","Ігровий потік отримує більше процесорного часу"], en:["cs2.exe priority = High","The game thread gets more CPU time"]},
+    {cat:"cat.frame", on:true,  risk:"ok",   imp:"-латентность", ru:["Отключить Fullscreen Optimizations","Убирает лишний композитор поверх игры"], uk:["Вимкнути Fullscreen Optimizations","Прибирає зайвий композитор поверх гри"], en:["Disable Fullscreen Optimizations","Removes the extra compositor layer over the game"]},
+    {cat:"cat.frame", on:false, risk:"warn", imp:"тест", ru:["GPU Hardware Scheduling","На Skylake иногда лучше выключить — проверим замером"], uk:["GPU Hardware Scheduling","На Skylake іноді краще вимкнути — перевіримо заміром"], en:["GPU Hardware Scheduling","On Skylake, off can be better — we'll verify by measuring"]},
+    {cat:"cat.nvidia", on:true,  risk:"ok", imp:"-латентность", ru:["Low Latency Mode = Ultra","Минимум предрендеренных кадров"], uk:["Low Latency Mode = Ultra","Мінімум передрендерених кадрів"], en:["Low Latency Mode = Ultra","Minimizes pre-rendered frames"]},
+    {cat:"cat.nvidia", on:true,  risk:"ok", imp:"+частоты", ru:["Power = Prefer Max Performance","Держит буст-частоты GPU, убирает просадки"], uk:["Power = Prefer Max Performance","Тримає буст-частоти GPU, прибирає просідання"], en:["Power = Prefer Max Performance","Holds GPU boost clocks, kills dips"]},
+    {cat:"cat.cpu", on:true,  risk:"ok",   imp:"+FPS", ru:["Core Parking выкл","Ядра не засыпают под нагрузкой"], uk:["Core Parking вимк","Ядра не засинають під навантаженням"], en:["Core Parking off","Cores stay awake under load"]},
+    {cat:"cat.cpu", on:true,  risk:"ok",   imp:"+частоты", ru:["Мин. состояние CPU 100%","Процессор держит частоту постоянно"], uk:["Мін. стан CPU 100%","Процесор тримає частоту постійно"], en:["Min CPU state 100%","CPU holds its clock constantly"]},
+    {cat:"cat.cpu", on:false, risk:"crit", imp:"агрессивно", ru:["Отключить троттлинг C-states","Меньше микро-простоев, но выше нагрев/энергопотребление"], uk:["Вимкнути тротлінг C-states","Менше мікро-простоїв, але вищий нагрів/споживання"], en:["Disable C-state throttling","Fewer micro-stalls, but more heat/power draw"]},
+    {cat:"cat.mem", on:true,  risk:"ok",   imp:"-фризы", ru:["Очистка standby-листа","Сбрасывает кэш памяти при заполнении — меньше стоков"], uk:["Очищення standby-листа","Скидає кеш пам'яті при заповненні — менше стоків"], en:["Standby list cleaner","Flushes the memory cache when full — fewer stalls"]},
+    {cat:"cat.mem", on:true,  risk:"ok",   imp:"-нагрузка", ru:["Отключить SysMain/Superfetch","Убирает фоновую нагрузку на память и диск"], uk:["Вимкнути SysMain/Superfetch","Прибирає фонове навантаження на пам'ять і диск"], en:["Disable SysMain/Superfetch","Removes background memory & disk load"]},
+    {cat:"cat.svc", on:true,  risk:"ok",   imp:"-нагрузка", ru:["Отключить телеметрию","DiagTrack и диагностика — прочь из фона"], uk:["Вимкнути телеметрію","DiagTrack і діагностика — геть з фону"], en:["Disable telemetry","DiagTrack & diagnostics out of the background"]},
+    {cat:"cat.svc", on:true,  risk:"ok",   imp:"-нагрузка", ru:["Отключить Xbox DVR/Game Bar","Фоновая запись игры больше не ест ресурсы"], uk:["Вимкнути Xbox DVR/Game Bar","Фоновий запис гри більше не їсть ресурси"], en:["Disable Xbox DVR/Game Bar","Background game recording stops eating resources"]},
+    {cat:"cat.net", on:false, risk:"ok",   imp:"-пинг", ru:["Отключить Nagle","Меньше задержка мелких сетевых пакетов"], uk:["Вимкнути Nagle","Менша затримка дрібних мережевих пакетів"], en:["Disable Nagle","Lower latency on small network packets"]}
+  ];
+  const riskLabel = {ok:"risk.none", warn:"risk.mid", crit:"risk.high"};
+
+  /* ---------- render tweaks ---------- */
+  function renderTweaks(){
+    const box = document.getElementById("tweakGroups");
+    const cats = [...new Set(TWEAKS.map(t=>t.cat))];
+    box.innerHTML = "";
+    cats.forEach(c=>{
+      const h = document.createElement("div"); h.className="cat"; h.textContent = t(c); box.appendChild(h);
+      TWEAKS.forEach((tw,i)=>{
+        if(tw.cat!==c) return;
+        const el = document.createElement("div"); el.className="tweak";
+        const rc = tw.risk==="ok"?"ok":tw.risk==="warn"?"warn":"crit";
+        const rlab = tw.risk==="ok"?t("risk.none"):tw.risk==="warn"?(lang==="en"?"medium":lang==="uk"?"середній":"средний"):t("risk.high");
+        el.innerHTML = `<div class="info"><div class="tn">${tw[lang][0]} <span class="chip ${rc}">${rlab}</span></div><div class="td">${tw[lang][1]}</div></div><div class="imp">${tw.imp}</div>`;
+        const sw = document.createElement("button"); sw.className="sw"+(tw.on?" on":""); sw.setAttribute("aria-pressed",tw.on); sw.setAttribute("aria-label",tw[lang][0]);
+        sw.addEventListener("click",()=>{ tw.on=!tw.on; sw.classList.toggle("on",tw.on); sw.setAttribute("aria-pressed",tw.on); updateCounts(); });
+        el.appendChild(sw);
+        box.appendChild(el);
+      });
+    });
+  }
+  function renderPlan(){
+    const box = document.getElementById("planList");
+    box.innerHTML = "";
+    TWEAKS.slice(0,6).forEach(tw=>{
+      const el=document.createElement("div"); el.className="tweak"; el.style.marginBottom="6px";
+      el.innerHTML = `<div class="info"><div class="tn">${tw[lang][0]}</div></div><span class="chip ${tw.risk==="ok"?"ok":tw.risk==="warn"?"warn":"crit"}">${tw.risk==="ok"?t("risk.none"):t("risk.high")}</span>`;
+      box.appendChild(el);
+    });
+    const more=document.createElement("div"); more.className="sub"; more.style.margin="8px 2px 0";
+    more.textContent = lang==="en"?"+ 8 more tweaks…":lang==="uk"?"+ ще 8 твіків…":"+ ещё 8 твиков…";
+    box.appendChild(more);
+  }
+  function updateCounts(){
+    const on = TWEAKS.filter(t=>t.on).length;
+    document.getElementById("onCount").textContent = on;
+    document.getElementById("twkCount").textContent = TWEAKS.length;
+  }
+
+  /* ---------- i18n apply ---------- */
+  function applyI18n(){
+    document.querySelectorAll("[data-i18n]").forEach(e=>{ e.textContent = t(e.getAttribute("data-i18n")); });
+    renderTweaks(); renderPlan(); updateCounts();
+  }
+
+  /* ---------- nav ---------- */
+  function go(name){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active", s.dataset.name===name));
+    document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active", n.dataset.screen===name));
+  }
+  document.querySelectorAll(".nav").forEach(n=>{
+    n.addEventListener("click",()=>go(n.dataset.screen));
+    n.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(n.dataset.screen);} });
+  });
+  document.querySelectorAll("[data-nav]").forEach(b=> b.addEventListener("click",()=>go(b.dataset.screen)));
+
+  /* ---------- language ---------- */
+  document.querySelectorAll("[data-lang]").forEach(b=>{
+    b.addEventListener("click",()=>{
+      lang=b.dataset.lang;
+      document.querySelectorAll("[data-lang]").forEach(x=>x.classList.toggle("on",x===b));
+      applyI18n();
+    });
+  });
+
+  /* ---------- theme ---------- */
+  function currentDark(){
+    const set = root.getAttribute("data-theme");
+    if(set) return set==="dark";
+    return matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  document.getElementById("themeBtn").addEventListener("click",()=>{
+    root.setAttribute("data-theme", currentDark()?"light":"dark");
+    drawSpark(); drawChart();
+  });
+
+  /* ---------- profile select ---------- */
+  document.querySelectorAll(".prof").forEach(p=> p.addEventListener("click",()=>{
+    document.querySelectorAll(".prof").forEach(x=>x.classList.remove("sel")); p.classList.add("sel");
+  }));
+
+  /* ---------- toast ---------- */
+  const toast=document.getElementById("toast"); let tt;
+  function showToast(key){ toast.textContent=t(key); toast.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>toast.classList.remove("show"),2200); }
+
+  /* ---------- boost / apply ---------- */
+  function fakeApply(){
+    showToast("toast.applying");
+    setTimeout(()=>showToast("toast.applied"),1400);
+  }
+  document.getElementById("boostBtn").addEventListener("click",fakeApply);
+  document.getElementById("applyBtn").addEventListener("click",fakeApply);
+  document.querySelectorAll("[data-copy]").forEach(b=> b.addEventListener("click",()=>showToast("toast.copied")));
+  document.querySelectorAll(".rp .btn").forEach(b=> b.addEventListener("click",()=>showToast("toast.reverted")));
+
+  /* ---------- sparkline (dashboard) ---------- */
+  function css(v){ return getComputedStyle(root).getPropertyValue(v).trim(); }
+  function drawSpark(){
+    const c=document.getElementById("spark"); if(!c) return; const x=c.getContext("2d");
+    const w=c.width,h=c.height; x.clearRect(0,0,w,h);
+    const good=css("--good"), crit=css("--crit");
+    // choppy 'before' then smooth 'after'
+    x.lineWidth=2; x.beginPath();
+    for(let i=0;i<w;i++){ const p=i/w; let y;
+      if(p<0.5){ y=h*0.5 + Math.sin(i*0.6)*h*0.32*Math.random(); }
+      else { y=h*0.32 + Math.sin(i*0.25)*h*0.06; }
+      i===0?x.moveTo(i,y):x.lineTo(i,y);
+    }
+    const g=x.createLinearGradient(0,0,w,0); g.addColorStop(0,crit); g.addColorStop(0.5,crit); g.addColorStop(0.62,good); g.addColorStop(1,good);
+    x.strokeStyle=g; x.stroke();
+  }
+
+  /* ---------- frametime chart (monitor) ---------- */
+  let raf=null;
+  function drawChart(){
+    const c=document.getElementById("ftChart"); if(!c) return; const x=c.getContext("2d");
+    const w=c.width,h=c.height; const good=css("--good"),crit=css("--crit"),grid=css("--border"),mut=css("--muted");
+    const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let phase=0;
+    function frame(){
+      x.clearRect(0,0,w,h);
+      // grid
+      x.strokeStyle=grid; x.lineWidth=1;
+      for(let gy=0;gy<=4;gy++){ const y=h*gy/4; x.beginPath(); x.moveTo(0,y); x.lineTo(w,y); x.stroke(); }
+      // target line
+      x.setLineDash([5,5]); x.strokeStyle=mut; x.beginPath(); x.moveTo(0,h*0.62); x.lineTo(w,h*0.62); x.stroke(); x.setLineDash([]);
+      // before (choppy)
+      x.strokeStyle=crit; x.lineWidth=1.6; x.globalAlpha=0.85; x.beginPath();
+      for(let i=0;i<w;i+=2){ const n=Math.sin(i*0.05+phase)*0.5+Math.sin(i*0.31+phase*1.7)*0.5; const y=h*0.42 + n*h*0.26 + (Math.sin(i*0.9+phase*3)*h*0.05); i===0?x.moveTo(i,y):x.lineTo(i,y);} x.stroke();
+      // after (smooth)
+      x.strokeStyle=good; x.lineWidth=2.2; x.globalAlpha=1; x.beginPath();
+      for(let i=0;i<w;i+=2){ const y=h*0.64 + Math.sin(i*0.06+phase*0.6)*h*0.02; i===0?x.moveTo(i,y):x.lineTo(i,y);} x.stroke();
+      x.globalAlpha=1;
+      if(!reduce){ phase+=0.05; raf=requestAnimationFrame(frame);} }
+    if(raf) cancelAnimationFrame(raf);
+    frame();
+  }
+  document.getElementById("replayBtn").addEventListener("click",drawChart);
+
+  /* ---------- init ---------- */
+  applyI18n(); drawSpark(); drawChart();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ drawSpark(); drawChart(); });
+})();
+</script>

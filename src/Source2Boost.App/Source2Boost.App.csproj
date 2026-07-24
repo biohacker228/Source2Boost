@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Source2Boost.App</RootNamespace>
+    <AssemblyName>Source2Boost</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Product>Source2Boost</Product>
+    <Version>1.1.0</Version>
+    <Company>Source2Boost</Company>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Source2Boost.Core\Source2Boost.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <!-- Кладём PresentMon 2.x рядом с exe при сборке/публикации, чтобы dev-запуск (bin\Debug)
+       брал ПРАВИЛЬНУЮ версию из своей папки, а не старый tools\PresentMon.exe через фолбэк. -->
+  <ItemGroup>
+    <None Include="..\..\tools\PresentMon-2.5.1-x64.exe" Link="PresentMon.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

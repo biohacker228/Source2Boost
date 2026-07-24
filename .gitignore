@@ -1,0 +1,23 @@
+# ---- Сборочные артефакты .NET ----
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+
+# ---- Вывод публикации и установщика (раздаём через GitHub Releases, НЕ коммитим) ----
+/publish/
+/dist/
+
+# ---- IDE / editor ----
+.vs/
+.vscode/
+.idea/
+*.swp
+
+# ---- Прочее ----
+*.log
+Thumbs.db
+desktop.ini
+
+# Примечание: tools/PresentMon-2.5.1-x64.exe (Intel, MIT) намеренно КОММИТИМ —
+# он нужен для сборки установщика и экрана мониторинга.

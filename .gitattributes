@@ -1,0 +1,17 @@
+# Нормализация переводов строк: текст — авто, бинарники — как есть.
+* text=auto
+
+*.cs      text
+*.xaml    text
+*.csproj  text
+*.sln     text
+*.md      text
+*.iss     text
+*.cfg     text
+*.ps1     text
+
+# Бинарные файлы — не трогать.
+*.png     binary
+*.ico     binary
+*.exe     binary
+*.dll     binary
