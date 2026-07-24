@@ -25,11 +25,12 @@ public sealed record UpdateInfo(Version Version, string DownloadUrl, string? Sha
 /// </summary>
 public static class UpdateService
 {
-    // TODO(publish): заменить на реальный адрес фида перед публикацией.
-    // Удобно хостить на GitHub Releases: положить update.json в репозиторий (raw-ссылка)
-    // и заливать Source2Boost-Setup.exe в assets релиза.
+    // Фид обновлений: update.json лежит в корне репозитория (raw-ссылка на ветку main),
+    // а Source2Boost-Setup.exe заливается в assets GitHub-релиза. Чтобы выпустить новую
+    // версию: собрать установщик, создать релиз с тегом vX.Y.Z + этим exe, затем обновить
+    // update.json (version/url/sha256) в main.
     public const string DefaultFeedUrl =
-        "https://raw.githubusercontent.com/OWNER/REPO/main/update.json";
+        "https://raw.githubusercontent.com/biohacker228/Source2Boost/main/update.json";
 
     /// <summary>Версия текущей сборки приложения (из атрибутов сборки).</summary>
     public static Version CurrentVersion =>
