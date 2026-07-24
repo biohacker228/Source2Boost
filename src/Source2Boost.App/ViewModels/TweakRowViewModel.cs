@@ -12,6 +12,7 @@ public sealed class TweakRowViewModel : ObservableObject
 {
     public ITweak Tweak { get; }
     public bool IsSoon { get; }
+    public bool IsExperimental { get; }
 
     public string Title { get; }
     public string Description { get; }
@@ -34,11 +35,15 @@ public sealed class TweakRowViewModel : ObservableObject
     {
         Tweak = tw;
         IsSoon = isSoon;
+        IsExperimental = tw is IExperimental;
         _isChecked = isChecked;
         Title = tw.Title.For(lang);
         Description = tw.Description.For(lang);
         Impact = tw.Impact.For(lang);
 
-        (ChipText, ChipBackground, ChipForegroundKey) = isSoon ? RiskChip.Soon() : RiskChip.For(tw.Risk);
+        (ChipText, ChipBackground, ChipForegroundKey) =
+            isSoon ? RiskChip.Soon() :
+            IsExperimental ? RiskChip.Experimental() :
+            RiskChip.For(tw.Risk);
     }
 }

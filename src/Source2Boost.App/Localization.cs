@@ -244,6 +244,7 @@ public static class Loc
         ["risk.high"]     = new("агрессивно", "агресивно", "aggressive"),
         ["risk.extreme"]  = new("безбашенно", "безбашенно", "unhinged"),
         ["risk.soon"]     = new("скоро", "скоро", "soon"),
+        ["risk.experimental"] = new("эксперимент", "експеримент", "experimental"),
 
         ["theme"]         = new("Тема", "Тема", "Theme"),
         ["opt.title"]     = new("Оптимизация", "Оптимізація", "Optimization"),

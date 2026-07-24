@@ -438,6 +438,20 @@ public static class TweakCatalog
             // ---- CPU / простой (High) — постоянная частота ----
             new CpuIdleDisableTweak(),
 
+            // ==== ЛАБОРАТОРИЯ (эксперимент) — НЕ входит в профили/оценку, только вручную с A/B ====
+            // Распределение истечения таймеров по всем ядрам, а не только по CPU0. На многоядерных
+            // CPU теоретически ровнее фреймтайм, но выигрыш НЕ гарантирован — кандидат на замер.
+            new ExperimentalTweak(new RegistryTweak(
+                "distribute-timers", TweakCategory.Frametime, RiskLevel.Medium,
+                new L10n("🧪 Распределять таймеры по ядрам", "🧪 Розподіляти таймери по ядрах", "🧪 Distribute timers across cores"),
+                new L10n("Эксперимент. Windows распределяет истечение системных таймеров по всем ядрам, а не только по нулевому — на многоядерном CPU теоретически ровнее фреймтайм. Польза НЕ гарантирована: замерь бенчмарком до/после. Полностью обратимо, нужна перезагрузка.",
+                         "Експеримент. Windows розподіляє спливання системних таймерів по всіх ядрах, а не лише по нульовому — на багатоядерному CPU теоретично рівніший фреймтайм. Користь НЕ гарантована: зміряй бенчмарком до/після. Повністю оборотно, потрібне перезавантаження.",
+                         "Experiment. Windows spreads system-timer expiration across all cores instead of only core 0 — on a multi-core CPU this may smooth frametime. Benefit is NOT guaranteed: measure with the benchmark before/after. Fully reversible, needs a reboot."),
+                new L10n("?ровность (замерь)", "?рівність (зміряй)", "?smoothness (measure)"),
+                RegistryHive.LocalMachine, KernelKey,
+                new[] { new RegEntry("DistributeTimers", RegistryValueKind.DWord, 1) },
+                requiresRestart: true)),
+
             // ==== БЕЗБАШЕННОЕ (Extreme) — НЕ входит в профили, только вручную ====
             new DefenderRealtimeOffTweak(),
         };
@@ -449,8 +463,8 @@ public static class TweakCatalog
     /// </summary>
     public static IEnumerable<ITweak> ForProfile(Profile p)
     {
-        // «Скоро»-заглушки (IComingSoon) не входят ни в один профиль.
-        var byRisk = All().Where(t => t is not IComingSoon).OrderBy(t => (int)t.Risk);
+        // «Скоро»-заглушки (IComingSoon) и эксперименты (IExperimental) не входят ни в один профиль.
+        var byRisk = All().Where(t => t is not IComingSoon and not IExperimental).OrderBy(t => (int)t.Risk);
         return p switch
         {
             Profile.Safe => byRisk.Where(t => t.Risk == RiskLevel.Safe),

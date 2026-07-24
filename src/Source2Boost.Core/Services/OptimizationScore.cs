@@ -34,8 +34,8 @@ public static class OptimizationScore
 
         foreach (var tw in TweakCatalog.All())
         {
-            // «Безбашенные» Extreme и «скоро»-заглушки в оценку не считаем.
-            if (tw.Risk == RiskLevel.Extreme || tw is IComingSoon) continue;
+            // «Безбашенные» Extreme, «скоро»-заглушки и эксперименты в оценку не считаем.
+            if (tw.Risk == RiskLevel.Extreme || tw is IComingSoon or IExperimental) continue;
 
             bool ok;
             try { ok = tw.IsSupported(ctx); } catch { ok = false; }

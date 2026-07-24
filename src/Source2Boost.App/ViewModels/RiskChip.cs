@@ -18,6 +18,10 @@ public static class RiskChip
     public static (string Text, Brush Background, string ForegroundKey) Soon()
         => (Loc.T("risk.soon"), Soft(0x8D, 0x80, 0x69), "Muted");
 
+    /// <summary>Бейдж «эксперимент» (Лаборатория) — фиолетовый, отличается от риск-чипов.</summary>
+    public static (string Text, Brush Background, string ForegroundKey) Experimental()
+        => (Loc.T("risk.experimental"), Soft(0x9B, 0x6D, 0xFF), "Accent");
+
     private static SolidColorBrush Soft(byte r, byte g, byte b)
     {
         var brush = new SolidColorBrush(Color.FromArgb(40, r, g, b));
