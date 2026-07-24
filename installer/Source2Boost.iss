@@ -2,7 +2,7 @@
 ; Собирать: ISCC.exe installer\Source2Boost.iss  (после dotnet publish -> publish\)
 
 #define MyAppName "Source2Boost"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Source2Boost"
 #define MyAppExeName "Source2Boost.exe"
 

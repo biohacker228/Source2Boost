@@ -11,7 +11,7 @@
     <AssemblyName>Source2Boost</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Product>Source2Boost</Product>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Company>Source2Boost</Company>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
