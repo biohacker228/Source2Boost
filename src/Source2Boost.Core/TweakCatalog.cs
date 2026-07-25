@@ -450,7 +450,8 @@ public static class TweakCatalog
                 new L10n("?ровность (замерь)", "?рівність (зміряй)", "?smoothness (measure)"),
                 RegistryHive.LocalMachine, KernelKey,
                 new[] { new RegEntry("DistributeTimers", RegistryValueKind.DWord, 1) },
-                requiresRestart: true)),
+                requiresRestart: true,
+                supported: ctx => ctx.Hardware.CpuThreads >= 4)),   // смысл только на многоядерном CPU
 
             // ==== БЕЗБАШЕННОЕ (Extreme) — НЕ входит в профили, только вручную ====
             new DefenderRealtimeOffTweak(),

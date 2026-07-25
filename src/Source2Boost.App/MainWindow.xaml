@@ -105,6 +105,37 @@
                 </StackPanel>
             </Border>
         </DataTemplate>
+
+        <!-- Строка твика (общая для списка «Твики» и раздела «Лаборатория») -->
+        <DataTemplate x:Key="TweakRowTemplate">
+            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                    CornerRadius="11" Padding="14,11" Margin="0,0,0,8" Opacity="{Binding RowOpacity}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5"
+                                       VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
+                            <Border Background="{Binding ChipBackground}" CornerRadius="20" Padding="8,2"
+                                    Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ChipText}" Style="{StaticResource ChipText}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap"
+                                   Margin="0,3,0,0" MaxWidth="620" Foreground="{DynamicResource Text2}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Impact}" FontSize="11.5"
+                               VerticalAlignment="Center" Margin="12,0,14,0" Foreground="{DynamicResource Good}" />
+                    <ui:ToggleSwitch Grid.Column="2" IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                     IsEnabled="{Binding IsEnabled}" VerticalAlignment="Center"
+                                     AutomationProperties.Name="{Binding Title}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="{DynamicResource Bg}">
@@ -161,6 +192,8 @@
                             <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Options24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavTweaks" Text="Твики" /></StackPanel></Button>
                         <Button x:Name="NavMonitor" Style="{StaticResource NavBtn}" Tag="monitor" Click="Nav_Click">
                             <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Pulse24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavMonitor" Text="Мониторинг" /></StackPanel></Button>
+                        <Button x:Name="NavLab"     Style="{StaticResource NavBtn}" Tag="lab"     Click="Nav_Click">
+                            <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Beaker24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavLab" Text="Лаборатория" /></StackPanel></Button>
                         <TextBlock Text="ИГРА" FontSize="10" Foreground="{DynamicResource Muted}" Margin="8,14,0,4" />
                         <Button x:Name="NavCs2"     Style="{StaticResource NavBtn}" Tag="cs2"     Click="Nav_Click">
                             <StackPanel Orientation="Horizontal"><ui:SymbolIcon Symbol="Games24" FontSize="16" Margin="0,0,10,0" /><TextBlock x:Name="TxtNavCs2" Text="Настройки CS2" /></StackPanel></Button>
@@ -301,39 +334,7 @@
                     <StackPanel x:Name="PanelTweaks" Visibility="Collapsed" MaxWidth="980" HorizontalAlignment="Center">
                         <TextBlock x:Name="TxtTweaksTitle" Text="Твики вручную" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
                         <TextBlock x:Name="TxtTweaksSub" Text="Включай по одному. У каждого — риск и ожидаемый эффект." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
-                        <ItemsControl x:Name="TweaksList" ItemsSource="{Binding Tweaks}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
-                                            CornerRadius="11" Padding="14,11" Margin="0,0,0,8" Opacity="{Binding RowOpacity}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5"
-                                                               VerticalAlignment="Center" Foreground="{DynamicResource Text}" />
-                                                    <Border Background="{Binding ChipBackground}" CornerRadius="20" Padding="8,2"
-                                                            Margin="8,0,0,0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding ChipText}" Style="{StaticResource ChipText}" />
-                                                    </Border>
-                                                </StackPanel>
-                                                <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap"
-                                                           Margin="0,3,0,0" MaxWidth="620" Foreground="{DynamicResource Text2}" />
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Impact}" FontSize="11.5"
-                                                       VerticalAlignment="Center" Margin="12,0,14,0" Foreground="{DynamicResource Good}" />
-                                            <ui:ToggleSwitch Grid.Column="2" IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                                             IsEnabled="{Binding IsEnabled}" VerticalAlignment="Center"
-                                                             AutomationProperties.Name="{Binding Title}" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <ItemsControl x:Name="TweaksList" ItemsSource="{Binding Tweaks}" ItemTemplate="{StaticResource TweakRowTemplate}" />
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                             <Button x:Name="BtnApplySelected" Click="ApplySelected_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
                                 <Button.Template>
@@ -346,6 +347,43 @@
                                 <TextBlock x:Name="TxtApplySelected" Text="Применить выбранные" />
                             </Button>
                             <ui:Button x:Name="BtnRevertAll" Content="Откатить всё" Click="RevertAll_Click" Margin="10,0,0,0" Padding="14,10" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Лаборатория: экспериментальные твики, проверяемые бенчмарком -->
+                    <StackPanel x:Name="PanelLab" Visibility="Collapsed" MaxWidth="980" HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtLabTitle" Text="Лаборатория" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
+                        <TextBlock x:Name="TxtLabSub" TextWrapping="Wrap" Text="Экспериментальные твики: работают и полностью обратимы, но польза НЕ доказана. Не входят в профили и в оценку. Включи один → перезагрузка → замерь в «Мониторинге» до/после. Оставляй только то, что реально помогло." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,14" />
+
+                        <!-- CTA к бенчмарку -->
+                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,0,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtLabBenchTitle" Text="Проверяй замером, а не на глаз" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource Text}" />
+                                    <TextBlock x:Name="TxtLabBenchBody" TextWrapping="Wrap" Text="В «Мониторинге» кнопка «Замерить» даёт средний FPS, 1% и 0.1% low, макс. стуттер и ровность фреймтайма — по ним и видно эффект." FontSize="12" Foreground="{DynamicResource Text2}" Margin="0,3,0,0" MaxWidth="640" />
+                                </StackPanel>
+                                <ui:Button x:Name="BtnLabToMonitor" Grid.Column="1" Content="Открыть замер" Click="LabToMonitor_Click" VerticalAlignment="Center" Cursor="Hand" Padding="14,9" />
+                            </Grid>
+                        </Border>
+
+                        <ItemsControl x:Name="LabList" ItemsSource="{Binding LabTweaks}" ItemTemplate="{StaticResource TweakRowTemplate}" />
+                        <TextBlock x:Name="TxtLabEmpty" Text="Под ваше железо пока нет экспериментальных твиков." FontSize="12.5" Foreground="{DynamicResource Muted}" Margin="2,4,0,0" Visibility="Collapsed" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <Button x:Name="BtnApplyLab" Click="ApplyLab_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{StaticResource AccentGrad}" CornerRadius="11" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock x:Name="TxtApplyLab" Text="Применить выбранные" />
+                            </Button>
                         </StackPanel>
                     </StackPanel>
 

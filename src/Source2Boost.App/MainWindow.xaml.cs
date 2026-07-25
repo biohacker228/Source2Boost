@@ -37,15 +37,18 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         {
             ["welcome"] = PanelWelcome,
             ["dash"] = PanelDash, ["boost"] = PanelBoost, ["tweaks"] = PanelTweaks,
-            ["monitor"] = PanelMonitor, ["cs2"] = PanelCs2, ["bios"] = PanelBios, ["restore"] = PanelRestore,
+            ["monitor"] = PanelMonitor, ["lab"] = PanelLab, ["cs2"] = PanelCs2, ["bios"] = PanelBios, ["restore"] = PanelRestore,
             ["settings"] = PanelSettings
         };
         _navs = new()
         {
             ["dash"] = NavDash, ["boost"] = NavBoost, ["tweaks"] = NavTweaks,
-            ["monitor"] = NavMonitor, ["cs2"] = NavCs2, ["bios"] = NavBios, ["restore"] = NavRestore,
+            ["monitor"] = NavMonitor, ["lab"] = NavLab, ["cs2"] = NavCs2, ["bios"] = NavBios, ["restore"] = NavRestore,
             ["settings"] = NavSettings
         };
+
+        // Пустое состояние Лаборатории обновляется и при async-заполнении списка.
+        _vm.LabTweaks.CollectionChanged += (_, _) => RefreshLab();
 
         CmbLang.SelectionChanged += (_, _) =>
             Loc.Set(CmbLang.SelectedIndex switch { 1 => "uk", 2 => "en", _ => "ru" });
@@ -266,6 +269,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         else if (id == "bios") BuildBios();
         else if (id == "monitor") _ = RefreshForecast();
         else if (id == "dash") BuildDashboard();
+        else if (id == "lab") RefreshLab();
         else if (id == "settings") RefreshAutomation();
     }
 
@@ -634,6 +638,42 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         await ShowInfoDialog(Loc.T("tweaks.title"), string.Format(Loc.T("tweaks.reconcile"), applied, reverted));
     }
 
+    // ---------- Лаборатория ----------
+    private void RefreshLab()
+    {
+        if (TxtLabEmpty is not null)
+            TxtLabEmpty.Visibility = _vm.LabTweaks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void LabToMonitor_Click(object sender, RoutedEventArgs e) => ShowPanel("monitor");
+
+    /// <summary>Применить/откатить экспериментальные твики Лаборатории (та же логика, что и «Твики»,
+    /// но по коллекции LabTweaks — эксперименты живут отдельно от профилей).</summary>
+    private async void ApplyLab_Click(object sender, RoutedEventArgs e)
+    {
+        if (_busy) return;
+        var ctx = Ctx();
+        var snapshot = _vm.LabTweaks.Where(r => !r.IsSoon)
+            .Select(r => (tw: r.Tweak, on: r.IsChecked)).ToList();
+        _busy = true;
+        BtnApplyLab.IsEnabled = false;
+        var (applied, reverted) = await Task.Run(() =>
+        {
+            var orch = new Orchestrator(ctx);
+            var toApply = snapshot.Where(r => r.on && r.tw.IsSupported(ctx) && !r.tw.IsApplied(ctx))
+                              .Select(r => r.tw).ToList();
+            var toRevert = snapshot.Where(r => !r.on && r.tw.IsSupported(ctx) && r.tw.IsApplied(ctx))
+                               .Select(r => r.tw).ToList();
+            int a = toApply.Count > 0 ? orch.Apply(toApply, createRestorePoint: true).Count(x => x.Result.Success) : 0;
+            int rv = toRevert.Count > 0 ? orch.Revert(toRevert).Count(x => x.Result.Success) : 0;
+            return (a, rv);
+        });
+        _busy = false;
+        BtnApplyLab.IsEnabled = true;
+        BuildTweaks(); // перечитать реальное состояние в тоглы
+        await ShowInfoDialog(Loc.T("lab.title"), string.Format(Loc.T("tweaks.reconcile"), applied, reverted));
+    }
+
     /// <summary>Диалог ошибки с КОДОМ. Пользователь присылает код — по нему в журнале сразу
     /// находится строка с полным стеком (код = отметка времени записи).</summary>
     private static async Task ShowErrorDialog(string where, Exception ex)
@@ -880,6 +920,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtNavBoost.Text = Loc.T("nav.boost");
         TxtNavTweaks.Text = Loc.T("nav.tweaks");
         TxtNavMonitor.Text = Loc.T("nav.monitor");
+        TxtNavLab.Text = Loc.T("nav.lab");
         TxtNavCs2.Text = Loc.T("nav.cs2");
         TxtNavRestore.Text = Loc.T("nav.restore");
 
@@ -918,6 +959,13 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtTweaksSub.Text = Loc.T("tweaks.sub");
         TxtApplySelected.Text = Loc.T("tweaks.apply");
         BtnRevertAll.Content = Loc.T("tweaks.revertall");
+        TxtLabTitle.Text = Loc.T("lab.title");
+        TxtLabSub.Text = Loc.T("lab.sub");
+        TxtLabBenchTitle.Text = Loc.T("lab.bench.title");
+        TxtLabBenchBody.Text = Loc.T("lab.bench.body");
+        BtnLabToMonitor.Content = Loc.T("lab.tomonitor");
+        TxtLabEmpty.Text = Loc.T("lab.empty");
+        TxtApplyLab.Text = Loc.T("tweaks.apply");
         TxtBoostTitle.Text = Loc.T("boost.title");
         TxtBoostSub.Text = Loc.T("boost.sub");
         TxtProfSafe.Text = Loc.T("profile.safe");

@@ -69,6 +69,10 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Строки списка «Твики» (привязаны к ItemsControl в XAML).</summary>
     public ObservableCollection<TweakRowViewModel> Tweaks { get; } = new();
 
+    /// <summary>Строки раздела «Лаборатория» — только экспериментальные твики (IExperimental).
+    /// Живут ОТДЕЛЬНО от основного списка, чтобы эксперименты были в своём разделе.</summary>
+    public ObservableCollection<TweakRowViewModel> LabTweaks { get; } = new();
+
     /// <summary>
     /// Строит список твиков МГНОВЕННО из кэша «применён», затем в фоне сверяет реальное
     /// состояние (параллельно) и поправляет тумблеры на месте + перезаписывает кэш.
@@ -79,15 +83,19 @@ public sealed class MainViewModel : ObservableObject
         var cache = LoadAppliedCache();
 
         Tweaks.Clear();
+        LabTweaks.Clear();
         var real = new List<TweakRowViewModel>();   // строки, участвующие в применении (не «скоро»)
         foreach (var tw in TweakCatalog.All())
         {
             bool soon = tw is IComingSoon;
+            bool experimental = tw is IExperimental;
             bool supported; try { supported = soon || tw.IsSupported(ctx); } catch { supported = true; }
             if (!soon && !supported) continue;
             bool applied = !soon && cache.TryGetValue(tw.Id, out var on) && on;
             var row = new TweakRowViewModel(tw, soon, applied, lang);
-            Tweaks.Add(row);
+            // Эксперименты — в свой раздел «Лаборатория», остальные — в основной список.
+            if (experimental) LabTweaks.Add(row);
+            else Tweaks.Add(row);
             if (!soon) real.Add(row);
         }
 

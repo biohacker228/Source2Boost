@@ -52,6 +52,7 @@ public static class Loc
         ["nav.boost"]     = new("Оптимизация", "Оптимізація", "Optimize"),
         ["nav.tweaks"]    = new("Твики", "Твіки", "Tweaks"),
         ["nav.monitor"]   = new("Тест и прогноз", "Тест і прогноз", "Test & forecast"),
+        ["nav.lab"]       = new("Лаборатория", "Лабораторія", "Lab"),
         ["nav.cs2"]       = new("Настройки CS2", "Налаштування CS2", "CS2 config"),
         ["nav.restore"]   = new("Откат", "Відкат", "Restore"),
 
@@ -142,6 +143,19 @@ public static class Loc
         ["tweaks.sub"]    = new("Включай по одному. У каждого — риск и ожидаемый эффект.",
                                 "Вмикай по одному. У кожного — ризик та очікуваний ефект.",
                                 "Toggle them one by one. Each shows risk and expected impact."),
+
+        ["lab.title"]     = new("Лаборатория", "Лабораторія", "Lab"),
+        ["lab.sub"]       = new("Экспериментальные твики: работают и полностью обратимы, но польза НЕ доказана. Не входят в профили и в оценку. Включи один → перезагрузка → замерь в «Мониторинге» до/после. Оставляй только то, что реально помогло.",
+                                "Експериментальні твіки: працюють і повністю оборотні, але користь НЕ доведена. Не входять у профілі та в оцінку. Увімкни один → перезавантаження → зміряй у «Моніторингу» до/після. Залишай лише те, що реально допомогло.",
+                                "Experimental tweaks: they work and are fully reversible, but the benefit is UNPROVEN. Excluded from profiles and the score. Enable one → reboot → measure before/after in Monitoring. Keep only what actually helped."),
+        ["lab.bench.title"] = new("Проверяй замером, а не на глаз", "Перевіряй виміром, а не на око", "Prove it by measuring, not by feel"),
+        ["lab.bench.body"] = new("В «Мониторинге» кнопка «Замерить» даёт средний FPS, 1% и 0.1% low, макс. стуттер и ровность фреймтайма — по ним и видно эффект.",
+                                 "У «Моніторингу» кнопка «Зміряти» дає середній FPS, 1% та 0.1% low, макс. стуттер і рівність фреймтайму — за ними й видно ефект.",
+                                 "In Monitoring, the Measure button reports average FPS, 1% and 0.1% lows, max stutter and frametime consistency — that's where the effect shows."),
+        ["lab.tomonitor"] = new("Открыть замер", "Відкрити вимір", "Open benchmark"),
+        ["lab.empty"]     = new("Под ваше железо пока нет экспериментальных твиков.",
+                                "Під ваше залізо поки немає експериментальних твіків.",
+                                "No experimental tweaks for your hardware yet."),
 
         ["boost.title"]   = new("Оптимизация в один клик", "Оптимізація в один клік", "One-click optimization"),
         ["boost.stub"]    = new("Скоро: профили Safe / Максимум / Бенчмарк.", "Скоро: профілі Safe / Максимум / Бенчмарк.", "Coming soon: Safe / Maximum / Benchmark profiles."),
