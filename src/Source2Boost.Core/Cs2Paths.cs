@@ -98,8 +98,8 @@ public static class Cs2Paths
         return steam is null ? null : Path.Combine(steam, "steamapps", "shadercache", Cs2AppId);
     }
 
-    /// <summary>Папка ...\game\csgo\cfg для autoexec.cfg, или null если установка CS2 не найдена.</summary>
-    public static string? Cs2CfgDir()
+    /// <summary>Папка ...\game\csgo (корень контента CS2), или null если установка не найдена.</summary>
+    public static string? Cs2CsgoDir()
     {
         foreach (var lib in LibraryFolders())
         {
@@ -107,10 +107,24 @@ public static class Cs2Paths
             {
                 var csgo = Path.Combine(lib, "steamapps", "common",
                     "Counter-Strike Global Offensive", "game", "csgo");
-                if (Directory.Exists(csgo)) return Path.Combine(csgo, "cfg");
+                if (Directory.Exists(csgo)) return csgo;
             }
             catch { }
         }
         return null;
+    }
+
+    /// <summary>Папка ...\game\csgo\cfg для autoexec.cfg, или null если установка CS2 не найдена.</summary>
+    public static string? Cs2CfgDir()
+    {
+        var csgo = Cs2CsgoDir();
+        return csgo is null ? null : Path.Combine(csgo, "cfg");
+    }
+
+    /// <summary>Папка ...\game\csgo\replays для .dem-файлов, или null если установка не найдена.</summary>
+    public static string? Cs2ReplaysDir()
+    {
+        var csgo = Cs2CsgoDir();
+        return csgo is null ? null : Path.Combine(csgo, "replays");
     }
 }

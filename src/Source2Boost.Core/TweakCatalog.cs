@@ -453,6 +453,34 @@ public static class TweakCatalog
                 requiresRestart: true,
                 supported: ctx => ctx.Hardware.CpuThreads >= 4)),   // смысл только на многоядерном CPU
 
+            // Больший тайм-аут восстановления GPU (TDR). Под тяжёлой нагрузкой реже «дёргает»
+            // сбросом драйвера. НЕ поднимает средний FPS — только про редкие жёсткие хитчи.
+            // Только при дискретной GPU. Кандидат на замер.
+            new ExperimentalTweak(new RegistryTweak(
+                "tdr-delay", TweakCategory.Frametime, RiskLevel.Medium,
+                new L10n("🧪 Увеличить тайм-аут GPU (TDR)", "🧪 Збільшити тайм-аут GPU (TDR)", "🧪 Raise GPU timeout (TDR)"),
+                new L10n("Эксперимент. Поднимает тайм-аут восстановления драйвера GPU (TdrDelay 2→10 сек) — под тяжёлой нагрузкой Windows реже роняет драйвер и реже даёт жёсткий хитч. Средний FPS НЕ растёт. Минус: при реальном зависании GPU экран дольше не восстановится. Обратимо, нужна перезагрузка. Замерь до/после.",
+                         "Експеримент. Піднімає тайм-аут відновлення драйвера GPU (TdrDelay 2→10 с) — під важким навантаженням Windows рідше роняє драйвер і рідше дає жорсткий хітч. Середній FPS НЕ зростає. Мінус: при реальному зависанні GPU екран довше не відновиться. Оборотно, потрібне перезавантаження. Зміряй до/після.",
+                         "Experiment. Raises the GPU driver recovery timeout (TdrDelay 2→10 s) — under heavy load Windows resets the driver less often, so fewer hard hitches. Average FPS does NOT rise. Downside: on a real GPU hang the screen stays frozen longer. Reversible, needs a reboot. Measure before/after."),
+                new L10n("?меньше жёстких хитчей", "?менше жорстких хітчів", "?fewer hard hitches"),
+                RegistryHive.LocalMachine, GraphicsDrivers,
+                new[] { new RegEntry("TdrDelay", RegistryValueKind.DWord, 10) },
+                requiresRestart: true,
+                supported: ctx => ctx.Hardware.HasDiscreteGpu)),
+
+            // Классический «латентный» твик приоритета RTC (IRQ8). На современной Windows часто
+            // ПЛАЦЕБО — включён в Лабораторию именно чтобы дать это проверить/опровергнуть замером.
+            new ExperimentalTweak(new RegistryTweak(
+                "irq8-priority", TweakCategory.CpuPower, RiskLevel.Medium,
+                new L10n("🧪 Приоритет RTC-таймера (IRQ8)", "🧪 Пріоритет RTC-таймера (IRQ8)", "🧪 RTC timer priority (IRQ8)"),
+                new L10n("Эксперимент. Повышает приоритет прерывания системных часов реального времени (IRQ8). Классический твик «за низкую задержку», но на современной Windows часто НИЧЕГО не даёт (плацебо). Добавлен, чтобы ты проверил это на своём железе бенчмарком, а не верил на слово. Обратимо, нужна перезагрузка.",
+                         "Експеримент. Підвищує пріоритет переривання системного годинника реального часу (IRQ8). Класичний твік «за низьку затримку», але на сучасній Windows часто НІЧОГО не дає (плацебо). Додано, щоб ти перевірив це на своєму залізі бенчмарком, а не вірив на слово. Оборотно, потрібне перезавантаження.",
+                         "Experiment. Raises the interrupt priority of the real-time clock (IRQ8). A classic 'low-latency' tweak that on modern Windows often does NOTHING (placebo). Included so you can verify that on your own hardware with the benchmark instead of taking it on faith. Reversible, needs a reboot."),
+                new L10n("?латентность (скорее плацебо)", "?латентність (скоріше плацебо)", "?latency (likely placebo)"),
+                RegistryHive.LocalMachine, PriorityControl,
+                new[] { new RegEntry("IRQ8Priority", RegistryValueKind.DWord, 1) },
+                requiresRestart: true)),
+
             // ==== БЕЗБАШЕННОЕ (Extreme) — НЕ входит в профили, только вручную ====
             new DefenderRealtimeOffTweak(),
         };

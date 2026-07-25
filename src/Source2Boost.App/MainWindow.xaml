@@ -524,8 +524,20 @@
                                             <TextBlock x:Name="TxtMeasure" Text="Замерить (60 сек)" />
                                         </StackPanel>
                                     </Button>
+                                    <ui:Button x:Name="BtnAutoBench" Content="Авто-замер по демке" Click="AutoBench_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" Icon="{ui:SymbolIcon Play24}" />
+                                    <ui:Button x:Name="BtnSetBaseline" Content="Запомнить как «до»" Click="SetBaseline_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" IsEnabled="False" />
                                 </StackPanel>
+                                <TextBlock x:Name="TxtAutoBenchHint" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="11.5" Margin="0,8,0,0"
+                                           Text="Авто-замер прогоняет эталонную демку (одна и та же сцена каждый раз — честное «до/после»). Демку нужно один раз записать; кнопка подскажет как." />
                                 <TextBlock x:Name="TxtMonResult" TextWrapping="Wrap" Foreground="{DynamicResource Text}" FontFamily="Consolas" FontSize="13" Margin="0,16,0,0" />
+                                <TextBlock x:Name="TxtMonBaseline" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" />
+                                <!-- Сравнение до/после (появляется, когда есть база и свежий замер) -->
+                                <Border x:Name="CardMonDelta" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,10,0,0" Visibility="Collapsed">
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtMonDeltaTitle" Text="Сравнение с «до»" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" />
+                                        <TextBlock x:Name="TxtMonDelta" TextWrapping="Wrap" FontFamily="Consolas" FontSize="13" Foreground="{DynamicResource Text}" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Border>
                     </StackPanel>

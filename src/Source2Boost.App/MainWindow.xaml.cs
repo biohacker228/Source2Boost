@@ -843,9 +843,16 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             TxtMonResult.Text = "⚠ " + Loc.T("monitor.nocs2");
             return;
         }
+        await CaptureAndShow(60);
+    }
 
+    /// <summary>Общий цикл замера: обратный отсчёт → захват PresentMon → вывод результата,
+    /// A/B-дельты и обновление прогноза. Используется и ручным «Замерить», и авто-замером по демке.</summary>
+    private async Task CaptureAndShow(int total)
+    {
+        _busy = true;
         BtnMeasure.IsEnabled = false;
-        const int total = 60;
+        BtnAutoBench.IsEnabled = false;
         int left = total;
         TxtMonResult.Text = string.Format(Loc.T("monitor.countdown"), left);
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -855,13 +862,17 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         var (csv, stats, err) = await PresentMonService.CaptureAsync(total, "run");
 
         timer.Stop();
+        _busy = false;
         BtnMeasure.IsEnabled = true;
+        BtnAutoBench.IsEnabled = true;
         if (stats is null) { TxtMonResult.Text = "⚠ " + (err ?? "нет данных"); return; }
         TxtMonResult.Text = string.Format(Loc.T("monitor.result"),
             stats.AvgFps, stats.Low1Fps, stats.Low01Fps, stats.MaxStutterMs, stats.StdDevMs, stats.Frames);
 
         // Сохраняем средний FPS — питает прогноз и рекомендацию лимита FPS.
         _lastStats = stats;
+        BtnSetBaseline.IsEnabled = true;          // теперь есть что «запомнить как до»
+        ShowDeltaVsBaseline(stats);               // если есть база — показать сравнение
         Ctx().Backup.SaveState("last-avg-fps",
             stats.AvgFps.ToString(System.Globalization.CultureInfo.InvariantCulture));
         RefreshCs2();
@@ -869,10 +880,112 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         BuildDashboard();   // вердикт узкого места теперь учитывает GPU-busy из замера
     }
 
+    /// <summary>Авто-замер по эталонной демке: запускает CS2 на playdemo, ждёт загрузки, затем
+    /// автоматически снимает 60-сек замер той же самой сцены (детерминированный A/B).</summary>
+    private async void AutoBench_Click(object sender, RoutedEventArgs e)
+    {
+        if (_busy) return;
+
+        // Нет эталонной демки — предложить записать её один раз (или открыть папку replays).
+        if (!Core.Cs2Benchmark.HasReferenceDemo())
+        {
+            var setup = await ShowConfirmDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.nodemo"));
+            if (setup) Core.Cs2Benchmark.OpenReplaysFolder();
+            return;
+        }
+
+        // Демка есть — запускаем воспроизведение и ждём загрузки перед захватом.
+        if (!PresentMonService.IsCs2Running())
+        {
+            if (!Core.Cs2Benchmark.LaunchDemoPlayback())
+            {
+                await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.launchfail"));
+                return;
+            }
+            _busy = true;
+            BtnAutoBench.IsEnabled = false; BtnMeasure.IsEnabled = false;
+            // Ждём, пока CS2 стартует и демо начнёт играть (движок + загрузка карты).
+            for (int i = 0; i < 60 && !PresentMonService.IsCs2Running(); i++)
+            {
+                TxtMonResult.Text = Loc.T("monitor.auto.launching");
+                await Task.Delay(1000);
+            }
+            await Task.Delay(20000); // фора на загрузку карты демо
+            _busy = false; BtnAutoBench.IsEnabled = true; BtnMeasure.IsEnabled = true;
+        }
+        else
+        {
+            // CS2 уже запущен — просто просим включить демо и стартуем захват.
+            Core.Cs2Benchmark.LaunchDemoPlayback();
+            await Task.Delay(8000);
+        }
+
+        await CaptureAndShow(60);
+    }
+
+    // ---------- A/B: база «до» и дельта «после» ----------
+    private const string BaselineKey = "bench-baseline";
+
+    /// <summary>Запомнить последний замер как эталон «до» (перед применением твика).</summary>
+    private void SetBaseline_Click(object sender, RoutedEventArgs e)
+    {
+        if (_lastStats is null) return;
+        Ctx().Backup.SaveState(BaselineKey,
+            System.Text.Json.JsonSerializer.Serialize(_lastStats));
+        RefreshBaselineLabel();
+        CardMonDelta.Visibility = Visibility.Collapsed;   // старая дельта уже неактуальна
+    }
+
+    private FrametimeStats? LoadBaseline()
+    {
+        var json = Ctx().Backup.LoadState(BaselineKey);
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        try { return System.Text.Json.JsonSerializer.Deserialize<FrametimeStats>(json); }
+        catch { return null; }
+    }
+
+    /// <summary>Подпись «эталон до: …» под результатом замера.</summary>
+    private void RefreshBaselineLabel()
+    {
+        if (TxtMonBaseline is null) return;
+        var b = LoadBaseline();
+        TxtMonBaseline.Text = b is null
+            ? Loc.T("monitor.baseline.none")
+            : string.Format(Loc.T("monitor.baseline.cur"), b.AvgFps, b.Low1Fps, b.MaxStutterMs, b.StdDevMs);
+    }
+
+    /// <summary>Показать дельту свежего замера относительно эталона «до».</summary>
+    private void ShowDeltaVsBaseline(FrametimeStats now)
+    {
+        var b = LoadBaseline();
+        if (b is null) { CardMonDelta.Visibility = Visibility.Collapsed; return; }
+        // Для FPS и low «больше = лучше» (up=true); для стуттера и StdDev «меньше = лучше» (up=false).
+        TxtMonDelta.Text = string.Join("   ",
+            D("FPS", now.AvgFps - b.AvgFps, up: true),
+            D("1% low", now.Low1Fps - b.Low1Fps, up: true),
+            D("0.1% low", now.Low01Fps - b.Low01Fps, up: true),
+            D("стуттер", now.MaxStutterMs - b.MaxStutterMs, up: false, unit: " мс"),
+            D("ровность", now.StdDevMs - b.StdDevMs, up: false, unit: " мс"));
+        CardMonDelta.Visibility = Visibility.Visible;
+
+        static string D(string name, double delta, bool up, string unit = "")
+        {
+            var d = Math.Round(delta, 2);
+            bool better = up ? d > 0 : d < 0;
+            var arrow = d == 0 ? "=" : (better ? "▲" : "▼");
+            var sign = d > 0 ? "+" : "";
+            return $"{name} {arrow}{sign}{d.ToString(System.Globalization.CultureInfo.InvariantCulture)}{unit}";
+        }
+    }
+
     // ---------- Тест: оценка + прогноз FPS ----------
 
     private async Task RefreshForecast()
     {
+        // Состояние A/B-базы при каждом заходе на панель.
+        if (BtnSetBaseline is not null) BtnSetBaseline.IsEnabled = _lastStats is not null;
+        RefreshBaselineLabel();
+
         // Мгновенно показываем прошлый результат из кэша (OptimizationScore опрашивает IsApplied
         // всех твиков — часть спавнит powercfg/PowerShell, потому без кэша панель висела с «—»).
         // Реальный расчёт уходит в фон (VM) и перезаписывает кэш.
@@ -982,6 +1095,11 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtForecastTitle.Text = Loc.T("forecast.title");
         TxtMonHint.Text = Loc.T("monitor.hint");
         TxtMeasure.Text = Loc.T("monitor.measure");
+        BtnSetBaseline.Content = Loc.T("monitor.baseline.set");
+        BtnAutoBench.Content = Loc.T("monitor.auto.btn");
+        TxtAutoBenchHint.Text = Loc.T("monitor.auto.hint");
+        TxtMonDeltaTitle.Text = Loc.T("monitor.delta.title");
+        RefreshBaselineLabel();
         TxtNavBios.Text = Loc.T("nav.bios");
         TxtBiosTitle.Text = Loc.T("bios.title");
         TxtBiosSub.Text = Loc.T("bios.sub");
