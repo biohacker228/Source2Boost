@@ -124,6 +124,10 @@ public static class Cs2Benchmark
         catch { return false; }
     }
 
+    /// <summary>Скачана ли (подписана) карта в мастерской — можно ли её грузить host_workshop_map.</summary>
+    public static bool IsMapDownloaded(string mapId)
+        => IsValidId(mapId) && Cs2Paths.Cs2WorkshopMapDir(mapId) is not null;
+
     /// <summary>Путь к console.log (пишется при запуске с -condebug), или null.</summary>
     public static string? ConsoleLogPath()
     {

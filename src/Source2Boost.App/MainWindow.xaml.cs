@@ -924,6 +924,14 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             return;
         }
 
+        // Карта не подписана/не скачана — Steam не даст её загрузить. Ведём на разовую подписку.
+        if (!Core.Cs2Benchmark.IsMapDownloaded(mapId))
+        {
+            var sub = await ShowConfirmDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.subscribe"));
+            if (sub) Core.Cs2Benchmark.OpenWorkshopPage(mapId);
+            return;
+        }
+
         Core.Cs2Benchmark.ClearConsoleLog();               // чтобы не поймать прошлый VProf-итог
         if (!Core.Cs2Benchmark.LaunchWorkshopMap(mapId))
         {

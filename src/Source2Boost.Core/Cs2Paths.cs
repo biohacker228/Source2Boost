@@ -127,4 +127,21 @@ public static class Cs2Paths
         var csgo = Cs2CsgoDir();
         return csgo is null ? null : Path.Combine(csgo, "replays");
     }
+
+    /// <summary>Папка скачанной воршоп-карты (steamapps\workshop\content\730\&lt;id&gt;) в любой из
+    /// библиотек Steam, если карта подписана и загружена; иначе null.</summary>
+    public static string? Cs2WorkshopMapDir(string workshopId)
+    {
+        if (string.IsNullOrWhiteSpace(workshopId)) return null;
+        foreach (var lib in LibraryFolders())
+        {
+            try
+            {
+                var dir = Path.Combine(lib, "steamapps", "workshop", "content", Cs2AppId, workshopId);
+                if (Directory.Exists(dir)) return dir;
+            }
+            catch { }
+        }
+        return null;
+    }
 }
