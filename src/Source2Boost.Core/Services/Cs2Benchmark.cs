@@ -166,15 +166,18 @@ public static class Cs2Benchmark
     /// <summary>ID мастерской — только цифры (защита от мусора/инъекций в аргумент запуска).</summary>
     public static bool IsValidId(string? id) => !string.IsNullOrWhiteSpace(id) && Regex.IsMatch(id, @"^\d{6,15}$");
 
-    /// <summary>Запуск CS2 через Steam-протокол (steam://run/730) с необязательными аргументами.</summary>
+    /// <summary>Запуск CS2 через Steam-протокол (steam://run/730) с необязательными аргументами.
+    /// ВАЖНО про кодирование: НЕ используем EscapeDataString — он кодирует '+' в '%2B', а Steam
+    /// это не раскодирует, и консольные команды ('+host_workshop_map', '+playdemo') не срабатывают
+    /// (игра просто открывается в меню). Кодируем ТОЛЬКО пробелы в %20 — так же, как это делают
+    /// сторонние сайты-лаунчеры; '+' и '-' оставляем как есть.</summary>
     private static bool LaunchViaSteam(string? launchArgs)
     {
         try
         {
-            // steam://run/<appid>//<args> — Steam применяет args как параметры запуска игры.
             var uri = $"steam://run/{Cs2Paths.Cs2AppId}";
             if (!string.IsNullOrWhiteSpace(launchArgs))
-                uri += "//" + Uri.EscapeDataString(launchArgs);
+                uri += "//" + launchArgs.Trim().Replace(" ", "%20");
             Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
             return true;
         }
