@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Source2Boost.Core;
 
@@ -96,6 +98,69 @@ public static class Cs2Benchmark
         }
         catch { return false; }
     }
+
+    // ---------- Воршоп-бенч-карта (детерминированный сценарий с авто-прогоном) ----------
+
+    /// <summary>ID карты-бенчмарка по умолчанию: «CS2 FPS BENCHMARK ANCIENT» (живая, формат
+    /// вывода [VProf] FPS: Avg=..., P1=...). ID НАСТРАИВАЕМЫЙ — если карту удалят, юзер меняет
+    /// на другую, не завися от одной конкретной.</summary>
+    public const string DefaultWorkshopMapId = "3472126051";
+
+    /// <summary>Запустить CS2 сразу на воршоп-карту benchmark. <c>-condebug</c> заставляет игру
+    /// писать консоль в console.log (оттуда читаем итог карты), <c>+host_workshop_map</c> грузит карту.
+    /// Карта должна быть ПОДПИСАНА в мастерской (см. <see cref="OpenWorkshopPage"/>).</summary>
+    public static bool LaunchWorkshopMap(string mapId)
+        => !IsValidId(mapId) ? false : LaunchViaSteam($"-condebug +host_workshop_map {mapId}");
+
+    /// <summary>Открыть страницу карты в мастерской Steam (чтобы подписаться — разово).</summary>
+    public static bool OpenWorkshopPage(string mapId)
+    {
+        if (!IsValidId(mapId)) return false;
+        try
+        {
+            Process.Start(new ProcessStartInfo($"steam://url/CommunityFilePage/{mapId}") { UseShellExecute = true });
+            return true;
+        }
+        catch { return false; }
+    }
+
+    /// <summary>Путь к console.log (пишется при запуске с -condebug), или null.</summary>
+    public static string? ConsoleLogPath()
+    {
+        var csgo = Cs2Paths.Cs2CsgoDir();
+        return csgo is null ? null : Path.Combine(csgo, "console.log");
+    }
+
+    /// <summary>Разобрать ПОСЛЕДНЮЮ строку итога карты «[VProf] FPS: Avg=517.3, P1=183.5» из
+    /// console.log. Возвращает (средний FPS, 1% low) или null. Файл открыт игрой — читаем с share.</summary>
+    public static (double avg, double p1)? ParseVProfResult()
+    {
+        var path = ConsoleLogPath();
+        if (path is null || !File.Exists(path)) return null;
+        try
+        {
+            string text;
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs))
+                text = sr.ReadToEnd();
+            var m = Regex.Matches(text, @"\[VProf\]\s*FPS:\s*Avg=([\d.]+),\s*P1=([\d.]+)", RegexOptions.IgnoreCase);
+            if (m.Count == 0) return null;
+            var last = m[^1];
+            return (double.Parse(last.Groups[1].Value, CultureInfo.InvariantCulture),
+                    double.Parse(last.Groups[2].Value, CultureInfo.InvariantCulture));
+        }
+        catch { return null; }
+    }
+
+    /// <summary>Очистить console.log перед прогоном (чтобы не поймать старый VProf-итог). Best-effort.</summary>
+    public static void ClearConsoleLog()
+    {
+        try { var p = ConsoleLogPath(); if (p is not null && File.Exists(p)) File.WriteAllText(p, ""); }
+        catch { }
+    }
+
+    /// <summary>ID мастерской — только цифры (защита от мусора/инъекций в аргумент запуска).</summary>
+    public static bool IsValidId(string? id) => !string.IsNullOrWhiteSpace(id) && Regex.IsMatch(id, @"^\d{6,15}$");
 
     /// <summary>Запуск CS2 через Steam-протокол (steam://run/730) с необязательными аргументами.</summary>
     private static bool LaunchViaSteam(string? launchArgs)

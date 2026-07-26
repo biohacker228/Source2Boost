@@ -524,11 +524,17 @@
                                             <TextBlock x:Name="TxtMeasure" Text="Замерить (60 сек)" />
                                         </StackPanel>
                                     </Button>
-                                    <ui:Button x:Name="BtnAutoBench" Content="Авто-замер по демке" Click="AutoBench_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" Icon="{ui:SymbolIcon Play24}" />
+                                    <ui:Button x:Name="BtnAutoBench" Content="Авто-замер (бенч-карта)" Click="AutoBench_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" Icon="{ui:SymbolIcon Play24}" />
                                     <ui:Button x:Name="BtnSetBaseline" Content="Запомнить как «до»" Click="SetBaseline_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" IsEnabled="False" />
                                 </StackPanel>
+                                <!-- Настройка воршоп-карты бенчмарка (ID меняется, если карту удалят) -->
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <TextBlock x:Name="LblBenchMap" Text="Карта-бенчмарк (ID мастерской):" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,0,8,0" />
+                                    <TextBox x:Name="TxtBenchMapId" Width="140" VerticalAlignment="Center" FontSize="13" Padding="8,5" LostFocus="BenchMapId_LostFocus" />
+                                    <ui:Button x:Name="BtnSubscribeMap" Content="Подписаться" Click="SubscribeMap_Click" Margin="8,0,0,0" Padding="12,7" Cursor="Hand" />
+                                </StackPanel>
                                 <TextBlock x:Name="TxtAutoBenchHint" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="11.5" Margin="0,8,0,0"
-                                           Text="Авто-замер прогоняет эталонную демку (одна и та же сцена каждый раз — честное «до/после»). Демку нужно один раз записать; кнопка подскажет как." />
+                                           Text="Авто-замер сам запускает CS2 и грузит воршоп-карту бенчмарка (один и тот же сценарий каждый раз — честное «до/после»). Карту нужно один раз подписать в мастерской (кнопка «Подписаться»)." />
                                 <TextBlock x:Name="TxtMonResult" TextWrapping="Wrap" Foreground="{DynamicResource Text}" FontFamily="Consolas" FontSize="13" Margin="0,16,0,0" />
                                 <TextBlock x:Name="TxtMonBaseline" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" />
                                 <!-- Сравнение до/после (появляется, когда есть база и свежий замер) -->

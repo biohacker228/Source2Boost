@@ -888,47 +888,67 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         BuildDashboard();   // вердикт узкого места теперь учитывает GPU-busy из замера
     }
 
-    /// <summary>Авто-замер по эталонной демке: запускает CS2 на playdemo, ждёт загрузки, затем
-    /// автоматически снимает 60-сек замер той же самой сцены (детерминированный A/B).</summary>
+    private string BenchMapId()
+    {
+        var saved = Ctx().Backup.LoadState("bench-map-id")?.Trim();
+        return Core.Cs2Benchmark.IsValidId(saved) ? saved! : Core.Cs2Benchmark.DefaultWorkshopMapId;
+    }
+
+    private void BenchMapId_LostFocus(object sender, RoutedEventArgs e)
+    {
+        var id = TxtBenchMapId.Text?.Trim() ?? "";
+        if (Core.Cs2Benchmark.IsValidId(id)) Ctx().Backup.SaveState("bench-map-id", id);
+    }
+
+    private void SubscribeMap_Click(object sender, RoutedEventArgs e)
+        => Core.Cs2Benchmark.OpenWorkshopPage(TxtBenchMapId.Text?.Trim() ?? BenchMapId());
+
+    /// <summary>Авто-замер по воршоп-карте бенчмарка: запускает CS2 с -condebug на нужную карту,
+    /// ждёт загрузку и авто-прогон сцены, снимает наш PresentMon (тот же сценарий = честный A/B),
+    /// плюс кросс-чек по строке [VProf] из консоли карты. Требует, чтобы CS2 был закрыт (мы сами
+    /// запускаем его с нужными флагами) и карта была подписана в мастерской.</summary>
     private async void AutoBench_Click(object sender, RoutedEventArgs e)
     {
         if (_busy) return;
-
-        // Нет эталонной демки — предложить записать её один раз (или открыть папку replays).
-        if (!Core.Cs2Benchmark.HasReferenceDemo())
+        var mapId = TxtBenchMapId.Text?.Trim() ?? "";
+        if (!Core.Cs2Benchmark.IsValidId(mapId))
         {
-            var setup = await ShowConfirmDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.nodemo"));
-            if (setup) Core.Cs2Benchmark.OpenReplaysFolder();
+            await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.badid"));
             return;
         }
 
-        // Демка есть — запускаем воспроизведение и ждём загрузки перед захватом.
-        if (!PresentMonService.IsCs2Running())
+        // CS2 уже запущен — карту извне не сменить (нет доступа к консоли). Просим закрыть.
+        if (PresentMonService.IsCs2Running())
         {
-            if (!Core.Cs2Benchmark.LaunchDemoPlayback())
-            {
-                await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.launchfail"));
-                return;
-            }
-            _busy = true;
-            BtnAutoBench.IsEnabled = false; BtnMeasure.IsEnabled = false;
-            // Ждём, пока CS2 стартует и демо начнёт играть (движок + загрузка карты).
-            for (int i = 0; i < 60 && !PresentMonService.IsCs2Running(); i++)
-            {
-                TxtMonResult.Text = Loc.T("monitor.auto.launching");
-                await Task.Delay(1000);
-            }
-            await Task.Delay(20000); // фора на загрузку карты демо
-            _busy = false; BtnAutoBench.IsEnabled = true; BtnMeasure.IsEnabled = true;
-        }
-        else
-        {
-            // CS2 уже запущен — просто просим включить демо и стартуем захват.
-            Core.Cs2Benchmark.LaunchDemoPlayback();
-            await Task.Delay(8000);
+            await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.running"));
+            return;
         }
 
-        await CaptureAndShow(60);
+        Core.Cs2Benchmark.ClearConsoleLog();               // чтобы не поймать прошлый VProf-итог
+        if (!Core.Cs2Benchmark.LaunchWorkshopMap(mapId))
+        {
+            await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.launchfail"));
+            return;
+        }
+
+        _busy = true;
+        BtnAutoBench.IsEnabled = false; BtnMeasure.IsEnabled = false;
+        // Ждём старт процесса CS2, затем даём фору на загрузку карты и старт авто-прогона сцены.
+        for (int i = 0; i < 90 && !PresentMonService.IsCs2Running(); i++)
+        {
+            TxtMonResult.Text = Loc.T("monitor.auto.launching");
+            await Task.Delay(1000);
+        }
+        TxtMonResult.Text = Loc.T("monitor.auto.loading");
+        await Task.Delay(25000);                            // загрузка карты + прогрев сцены
+        _busy = false; BtnAutoBench.IsEnabled = true; BtnMeasure.IsEnabled = true;
+
+        await CaptureAndShow(60);                           // наш замер по детерминированной сцене карты
+
+        // Кросс-чек: если карта записала свой итог в консоль — покажем рядом.
+        var v = Core.Cs2Benchmark.ParseVProfResult();
+        if (v is { } r)
+            TxtMonResult.Text += "\n" + string.Format(Loc.T("monitor.auto.vprof"), r.avg, r.p1);
     }
 
     // ---------- A/B: база «до» и дельта «после» ----------
@@ -993,6 +1013,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         // Состояние A/B-базы при каждом заходе на панель.
         if (BtnSetBaseline is not null) BtnSetBaseline.IsEnabled = _lastStats is not null;
         RefreshBaselineLabel();
+        if (TxtBenchMapId is not null && string.IsNullOrWhiteSpace(TxtBenchMapId.Text))
+            TxtBenchMapId.Text = BenchMapId();
 
         // Мгновенно показываем прошлый результат из кэша (OptimizationScore опрашивает IsApplied
         // всех твиков — часть спавнит powercfg/PowerShell, потому без кэша панель висела с «—»).
@@ -1106,6 +1128,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         BtnSetBaseline.Content = Loc.T("monitor.baseline.set");
         BtnAutoBench.Content = Loc.T("monitor.auto.btn");
         TxtAutoBenchHint.Text = Loc.T("monitor.auto.hint");
+        LblBenchMap.Text = Loc.T("monitor.benchmap.label");
+        BtnSubscribeMap.Content = Loc.T("monitor.subscribe");
         TxtMonDeltaTitle.Text = Loc.T("monitor.delta.title");
         RefreshBaselineLabel();
         TxtNavBios.Text = Loc.T("nav.bios");
