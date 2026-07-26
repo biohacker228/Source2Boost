@@ -126,7 +126,7 @@
                             </Border>
                         </StackPanel>
                         <TextBlock Text="{Binding Description}" FontSize="12" TextWrapping="Wrap"
-                                   Margin="0,3,0,0" MaxWidth="620" Foreground="{DynamicResource Text2}" />
+                                   Margin="0,3,0,0" MaxWidth="620" HorizontalAlignment="Left" Foreground="{DynamicResource Text2}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1" Text="{Binding Impact}" FontSize="11.5"
                                VerticalAlignment="Center" Margin="12,0,14,0" Foreground="{DynamicResource Good}" />
