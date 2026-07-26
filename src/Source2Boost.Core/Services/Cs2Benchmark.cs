@@ -108,9 +108,12 @@ public static class Cs2Benchmark
 
     /// <summary>Запустить CS2 сразу на воркшоп-карту benchmark. <c>-condebug</c> заставляет игру
     /// писать консоль в console.log (оттуда читаем итог карты), <c>+host_workshop_map</c> грузит карту.
+    /// <c>+fps_max 0</c> СНИМАЕТ лимит FPS на время прогона — иначе бенчмарк упрётся в кап и покажет
+    /// неправду. Это разовая команда на сессию: файлы (autoexec) не трогаются, обычный кап вернётся
+    /// сам при следующем нормальном запуске (autoexec применяется через +exec autoexec).
     /// Карта должна быть ПОДПИСАНА в мастерской (см. <see cref="OpenWorkshopPage"/>).</summary>
     public static bool LaunchWorkshopMap(string mapId)
-        => !IsValidId(mapId) ? false : LaunchViaSteam($"-condebug +host_workshop_map {mapId}");
+        => !IsValidId(mapId) ? false : LaunchViaSteam($"-condebug +host_workshop_map {mapId} +fps_max 0");
 
     /// <summary>Открыть страницу карты в мастерской Steam (чтобы подписаться — разово).</summary>
     public static bool OpenWorkshopPage(string mapId)
