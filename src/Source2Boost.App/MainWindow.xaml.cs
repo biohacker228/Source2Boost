@@ -842,51 +842,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     }
 
     // ---------- Экран мониторинга ----------
-    private async void Measure_Click(object sender, RoutedEventArgs e)
-    {
-        if (!PresentMonService.IsCs2Running())
-        {
-            TxtMonResult.Text = "⚠ " + Loc.T("monitor.nocs2");
-            return;
-        }
-        await CaptureAndShow(60);
-    }
-
-    /// <summary>Общий цикл замера: обратный отсчёт → захват PresentMon → вывод результата,
-    /// A/B-дельты и обновление прогноза. Используется и ручным «Замерить», и авто-замером по демке.</summary>
-    private async Task CaptureAndShow(int total)
-    {
-        _busy = true;
-        BtnMeasure.IsEnabled = false;
-        BtnAutoBench.IsEnabled = false;
-        int left = total;
-        TxtMonResult.Text = string.Format(Loc.T("monitor.countdown"), left);
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        timer.Tick += (_, _) => { left--; if (left > 0) TxtMonResult.Text = string.Format(Loc.T("monitor.countdown"), left); };
-        timer.Start();
-
-        var (csv, stats, err) = await PresentMonService.CaptureAsync(total, "run");
-
-        timer.Stop();
-        _busy = false;
-        BtnMeasure.IsEnabled = true;
-        BtnAutoBench.IsEnabled = true;
-        if (stats is null) { TxtMonResult.Text = "⚠ " + (err ?? "нет данных"); return; }
-        TxtMonResult.Text = string.Format(Loc.T("monitor.result"),
-            stats.AvgFps, stats.Low1Fps, stats.Low01Fps, stats.MaxStutterMs, stats.StdDevMs, stats.Frames);
-
-        // Сохраняем средний FPS — питает прогноз и рекомендацию лимита FPS.
-        _lastStats = stats;
-        BtnSetBaseline.IsEnabled = true;          // теперь есть что «запомнить как до»
-        ShowDeltaVsBaseline(stats);               // если есть база — показать сравнение
-        Ctx().Backup.SaveState("last-avg-fps",
-            stats.AvgFps.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        Ctx().Backup.SaveState("last-low1-fps",
-            stats.Low1Fps.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        RefreshCs2();
-        _ = RefreshForecast();
-        BuildDashboard();   // вердикт узкого места теперь учитывает GPU-busy из замера
-    }
+    // Ручной замер по PresentMon убран: замер теперь полностью автоматический — по воршоп-карте
+    // бенчмарка (детерминированный сценарий), см. AutoBench_Click.
 
     private string BenchMapId()
     {
@@ -940,7 +897,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         }
 
         _busy = true;
-        BtnAutoBench.IsEnabled = false; BtnMeasure.IsEnabled = false;
+        BtnAutoBench.IsEnabled = false;
         // Ждём старт процесса CS2.
         for (int i = 0; i < 90 && !PresentMonService.IsCs2Running(); i++)
         {
@@ -960,7 +917,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         // Итог найден — подождём ещё чуть и перечитаем: возьмём ПОСЛЕДНЮЮ строку (если их несколько).
         if (res is not null) { await Task.Delay(3000); res = Core.Cs2Benchmark.ParseVProfResult() ?? res; }
 
-        _busy = false; BtnAutoBench.IsEnabled = true; BtnMeasure.IsEnabled = true;
+        _busy = false; BtnAutoBench.IsEnabled = true;
 
         if (res is not { } r)
         {
@@ -1159,9 +1116,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtScoreTitle.Text = Loc.T("score.title");
         TxtForecastTitle.Text = Loc.T("forecast.title");
         TxtMonHint.Text = Loc.T("monitor.hint");
-        TxtMeasure.Text = Loc.T("monitor.measure");
+        TxtAutoBench.Text = Loc.T("monitor.auto.btn");
         BtnSetBaseline.Content = Loc.T("monitor.baseline.set");
-        BtnAutoBench.Content = Loc.T("monitor.auto.btn");
         TxtAutoBenchHint.Text = Loc.T("monitor.auto.hint");
         LblBenchMap.Text = Loc.T("monitor.benchmap.label");
         BtnSubscribeMap.Content = Loc.T("monitor.subscribe");
