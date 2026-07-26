@@ -842,7 +842,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     }
 
     // ---------- Экран мониторинга ----------
-    // Ручной замер по PresentMon убран: замер теперь полностью автоматический — по воршоп-карте
+    // Ручной замер по PresentMon убран: замер теперь полностью автоматический — по воркшоп-карте
     // бенчмарка (детерминированный сценарий), см. AutoBench_Click.
 
     private string BenchMapId()
@@ -860,7 +860,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     private void SubscribeMap_Click(object sender, RoutedEventArgs e)
         => Core.Cs2Benchmark.OpenWorkshopPage(TxtBenchMapId.Text?.Trim() ?? BenchMapId());
 
-    /// <summary>Авто-замер по воршоп-карте бенчмарка: запускает CS2 с -condebug на нужную карту,
+    /// <summary>Авто-замер по воркшоп-карте бенчмарка: запускает CS2 с -condebug на нужную карту,
     /// ждёт загрузку и авто-прогон сцены, снимает наш PresentMon (тот же сценарий = честный A/B),
     /// плюс кросс-чек по строке [VProf] из консоли карты. Требует, чтобы CS2 был закрыт (мы сами
     /// запускаем его с нужными флагами) и карта была подписана в мастерской.</summary>

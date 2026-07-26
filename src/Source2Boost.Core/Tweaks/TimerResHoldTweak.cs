@@ -18,12 +18,12 @@ public sealed class TimerResHoldTweak : ITweak, IExperimental
     public bool RequiresRestart => false;
 
     public L10n Title { get; } = new(
-        "🧪 Держать таймер 0.5 мс", "🧪 Тримати таймер 0.5 мс", "🧪 Hold 0.5 ms timer");
+        "Держать таймер 0.5 мс", "Тримати таймер 0.5 мс", "Hold 0.5 ms timer");
 
     public L10n Description { get; } = new(
-        "Эксперимент. Приложение активно запрашивает максимально точный системный таймер (~0.5 мс) и держит его, пока запущено — планировщик Windows «просыпается» чаще, на многих ПК ровнее фреймтайм. Работает сразу (перезагрузка не нужна). Для влияния на CS2 включи ещё реестровый «Глобальный таймер разрешения». Выигрыш НЕ гарантирован — замерь до/после. Полностью обратимо.",
-        "Експеримент. Застосунок активно запитує максимально точний системний таймер (~0.5 мс) і тримає його, поки запущений — планувальник Windows «прокидається» частіше, на багатьох ПК рівніший фреймтайм. Працює одразу. Для впливу на CS2 увімкни ще реєстровий «Глобальний таймер роздільності». Виграш НЕ гарантований — зміряй. Повністю оборотно.",
-        "Experiment. The app actively requests the finest system timer (~0.5 ms) and holds it while running — Windows' scheduler wakes more often, smoothing frametime on many PCs. Works immediately (no reboot). To affect CS2, also enable the registry 'Global timer resolution'. Benefit NOT guaranteed — measure before/after. Fully reversible.");
+        "Приложение активно запрашивает максимально точный системный таймер (~0.5 мс) и держит его, пока запущено — планировщик Windows «просыпается» чаще, на многих ПК ровнее фреймтайм. Работает сразу (перезагрузка не нужна). Для влияния на CS2 включи ещё реестровый «Глобальный таймер разрешения». Выигрыш НЕ гарантирован — замерь до/после. Полностью обратимо.",
+        "Застосунок активно запитує максимально точний системний таймер (~0.5 мс) і тримає його, поки запущений — планувальник Windows «прокидається» частіше, на багатьох ПК рівніший фреймтайм. Працює одразу. Для впливу на CS2 увімкни ще реєстровий «Глобальний таймер роздільності». Виграш НЕ гарантований — зміряй. Повністю оборотно.",
+        "The app actively requests the finest system timer (~0.5 ms) and holds it while running — Windows' scheduler wakes more often, smoothing frametime on many PCs. Works immediately (no reboot). To affect CS2, also enable the registry 'Global timer resolution'. Benefit NOT guaranteed — measure before/after. Fully reversible.");
 
     public L10n Impact { get; } = new(
         "?ровность (замерь)", "?рівність (зміряй)", "?smoothness (measure)");

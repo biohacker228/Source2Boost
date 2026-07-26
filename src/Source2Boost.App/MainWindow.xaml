@@ -353,7 +353,7 @@
                     <!-- Лаборатория: экспериментальные твики, проверяемые бенчмарком -->
                     <StackPanel x:Name="PanelLab" Visibility="Collapsed" MaxWidth="980" HorizontalAlignment="Center">
                         <TextBlock x:Name="TxtLabTitle" Text="Лаборатория" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
-                        <TextBlock x:Name="TxtLabSub" TextWrapping="Wrap" Text="Экспериментальные твики: работают и полностью обратимы, но польза НЕ доказана. Не входят в профили и в оценку. Включи один → перезагрузка → замерь в «Мониторинге» до/после. Оставляй только то, что реально помогло." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,14" />
+                        <TextBlock x:Name="TxtLabSub" TextWrapping="Wrap" Text="Экспериментальные твики: работают и полностью обратимы, но польза НЕ доказана. Не входят в профили и в оценку. Включи один → перезагрузка → прогони «Авто-замер» в разделе «Тест и прогноз» до/после. Оставляй только то, что реально помогло." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,14" />
 
                         <!-- CTA к бенчмарку -->
                         <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,0,14">
@@ -364,7 +364,7 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock x:Name="TxtLabBenchTitle" Text="Проверяй замером, а не на глаз" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource Text}" />
-                                    <TextBlock x:Name="TxtLabBenchBody" TextWrapping="Wrap" Text="В «Мониторинге» кнопка «Замерить» даёт средний FPS, 1% и 0.1% low, макс. стуттер и ровность фреймтайма — по ним и видно эффект." FontSize="12" Foreground="{DynamicResource Text2}" Margin="0,3,0,0" MaxWidth="640" />
+                                    <TextBlock x:Name="TxtLabBenchBody" TextWrapping="Wrap" Text="В разделе «Тест и прогноз» кнопка «Авто-замер» прогоняет бенч-карту и показывает средний FPS, 1% low и сравнение с «до» — по ним и видно эффект." FontSize="12" Foreground="{DynamicResource Text2}" Margin="0,3,0,0" MaxWidth="640" />
                                 </StackPanel>
                                 <ui:Button x:Name="BtnLabToMonitor" Grid.Column="1" Content="Открыть замер" Click="LabToMonitor_Click" VerticalAlignment="Center" Cursor="Hand" Padding="14,9" />
                             </Grid>
@@ -509,7 +509,7 @@
                         <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel>
                                 <TextBlock x:Name="TxtMonHint" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="12.5"
-                                           Text="Замер полностью автоматический: прога сама запускает CS2, грузит воршоп-карту бенчмарка и по окончании прогона берёт её итог. Один и тот же сценарий каждый раз — честное «до/после»." />
+                                           Text="Замер полностью автоматический: программа сама запускает CS2, грузит воркшоп-карту бенчмарка и по окончании прогона берёт её итог. Один и тот же сценарий каждый раз — честное «до/после»." />
                                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
                                     <Button x:Name="BtnAutoBench" Click="AutoBench_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
                                         <Button.Template>
@@ -526,14 +526,14 @@
                                     </Button>
                                     <ui:Button x:Name="BtnSetBaseline" Content="Запомнить как «до»" Click="SetBaseline_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" IsEnabled="False" />
                                 </StackPanel>
-                                <!-- Настройка воршоп-карты бенчмарка (ID меняется, если карту удалят) -->
+                                <!-- Настройка воркшоп-карты бенчмарка (ID меняется, если карту удалят) -->
                                 <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                                     <TextBlock x:Name="LblBenchMap" Text="Карта-бенчмарк (ID мастерской):" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,0,8,0" />
                                     <TextBox x:Name="TxtBenchMapId" Width="140" VerticalAlignment="Center" FontSize="13" Padding="8,5" LostFocus="BenchMapId_LostFocus" />
                                     <ui:Button x:Name="BtnSubscribeMap" Content="Открыть карту (подписаться)" Click="SubscribeMap_Click" Margin="8,0,0,0" Padding="12,7" Cursor="Hand" Icon="{ui:SymbolIcon Open24}" />
                                 </StackPanel>
                                 <TextBlock x:Name="TxtAutoBenchHint" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="11.5" Margin="0,8,0,0"
-                                           Text="Карту нужно один раз подписать в мастерской (кнопка «Открыть карту» → «Подписаться» в Steam). CS2 должен быть закрыт — прога сама запустит его с нужными флагами." />
+                                           Text="Карту нужно один раз подписать в мастерской (кнопка «Открыть карту» → «Подписаться» в Steam). CS2 должен быть закрыт — программа сама запустит его с нужными флагами." />
                                 <TextBlock x:Name="TxtMonResult" TextWrapping="Wrap" Foreground="{DynamicResource Text}" FontFamily="Consolas" FontSize="13" Margin="0,16,0,0" />
                                 <TextBlock x:Name="TxtMonBaseline" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" />
                                 <!-- Сравнение до/после (появляется, когда есть база и свежий замер) -->

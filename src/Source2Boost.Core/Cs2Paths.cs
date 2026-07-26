@@ -128,7 +128,7 @@ public static class Cs2Paths
         return csgo is null ? null : Path.Combine(csgo, "replays");
     }
 
-    /// <summary>Папка скачанной воршоп-карты (steamapps\workshop\content\730\&lt;id&gt;) в любой из
+    /// <summary>Папка скачанной воркшоп-карты (steamapps\workshop\content\730\&lt;id&gt;) в любой из
     /// библиотек Steam, если карта подписана и загружена; иначе null.</summary>
     public static string? Cs2WorkshopMapDir(string workshopId)
     {

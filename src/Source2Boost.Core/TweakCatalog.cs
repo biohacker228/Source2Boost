@@ -443,10 +443,10 @@ public static class TweakCatalog
             // CPU теоретически ровнее фреймтайм, но выигрыш НЕ гарантирован — кандидат на замер.
             new ExperimentalTweak(new RegistryTweak(
                 "distribute-timers", TweakCategory.Frametime, RiskLevel.Medium,
-                new L10n("🧪 Распределять таймеры по ядрам", "🧪 Розподіляти таймери по ядрах", "🧪 Distribute timers across cores"),
-                new L10n("Эксперимент. Windows распределяет истечение системных таймеров по всем ядрам, а не только по нулевому — на многоядерном CPU теоретически ровнее фреймтайм. Польза НЕ гарантирована: замерь бенчмарком до/после. Полностью обратимо, нужна перезагрузка.",
-                         "Експеримент. Windows розподіляє спливання системних таймерів по всіх ядрах, а не лише по нульовому — на багатоядерному CPU теоретично рівніший фреймтайм. Користь НЕ гарантована: зміряй бенчмарком до/після. Повністю оборотно, потрібне перезавантаження.",
-                         "Experiment. Windows spreads system-timer expiration across all cores instead of only core 0 — on a multi-core CPU this may smooth frametime. Benefit is NOT guaranteed: measure with the benchmark before/after. Fully reversible, needs a reboot."),
+                new L10n("Распределять таймеры по ядрам", "Розподіляти таймери по ядрах", "Distribute timers across cores"),
+                new L10n("Windows распределяет истечение системных таймеров по всем ядрам, а не только по нулевому — на многоядерном CPU теоретически ровнее фреймтайм. Польза НЕ гарантирована: замерь бенчмарком до/после. Полностью обратимо, нужна перезагрузка.",
+                         "Windows розподіляє спливання системних таймерів по всіх ядрах, а не лише по нульовому — на багатоядерному CPU теоретично рівніший фреймтайм. Користь НЕ гарантована: зміряй бенчмарком до/після. Повністю оборотно, потрібне перезавантаження.",
+                         "Windows spreads system-timer expiration across all cores instead of only core 0 — on a multi-core CPU this may smooth frametime. Benefit is NOT guaranteed: measure with the benchmark before/after. Fully reversible, needs a reboot."),
                 new L10n("?ровность (замерь)", "?рівність (зміряй)", "?smoothness (measure)"),
                 RegistryHive.LocalMachine, KernelKey,
                 new[] { new RegEntry("DistributeTimers", RegistryValueKind.DWord, 1) },
@@ -458,10 +458,10 @@ public static class TweakCatalog
             // Только при дискретной GPU. Кандидат на замер.
             new ExperimentalTweak(new RegistryTweak(
                 "tdr-delay", TweakCategory.Frametime, RiskLevel.Medium,
-                new L10n("🧪 Увеличить тайм-аут GPU (TDR)", "🧪 Збільшити тайм-аут GPU (TDR)", "🧪 Raise GPU timeout (TDR)"),
-                new L10n("Эксперимент. Поднимает тайм-аут восстановления драйвера GPU (TdrDelay 2→10 сек) — под тяжёлой нагрузкой Windows реже роняет драйвер и реже даёт жёсткий хитч. Средний FPS НЕ растёт. Минус: при реальном зависании GPU экран дольше не восстановится. Обратимо, нужна перезагрузка. Замерь до/после.",
-                         "Експеримент. Піднімає тайм-аут відновлення драйвера GPU (TdrDelay 2→10 с) — під важким навантаженням Windows рідше роняє драйвер і рідше дає жорсткий хітч. Середній FPS НЕ зростає. Мінус: при реальному зависанні GPU екран довше не відновиться. Оборотно, потрібне перезавантаження. Зміряй до/після.",
-                         "Experiment. Raises the GPU driver recovery timeout (TdrDelay 2→10 s) — under heavy load Windows resets the driver less often, so fewer hard hitches. Average FPS does NOT rise. Downside: on a real GPU hang the screen stays frozen longer. Reversible, needs a reboot. Measure before/after."),
+                new L10n("Увеличить тайм-аут GPU (TDR)", "Збільшити тайм-аут GPU (TDR)", "Raise GPU timeout (TDR)"),
+                new L10n("Поднимает тайм-аут восстановления драйвера GPU (TdrDelay 2→10 сек) — под тяжёлой нагрузкой Windows реже роняет драйвер и реже даёт жёсткий хитч. Средний FPS НЕ растёт. Минус: при реальном зависании GPU экран дольше не восстановится. Обратимо, нужна перезагрузка. Замерь до/после.",
+                         "Піднімає тайм-аут відновлення драйвера GPU (TdrDelay 2→10 с) — під важким навантаженням Windows рідше роняє драйвер і рідше дає жорсткий хітч. Середній FPS НЕ зростає. Мінус: при реальному зависанні GPU екран довше не відновиться. Оборотно, потрібне перезавантаження. Зміряй до/після.",
+                         "Raises the GPU driver recovery timeout (TdrDelay 2→10 s) — under heavy load Windows resets the driver less often, so fewer hard hitches. Average FPS does NOT rise. Downside: on a real GPU hang the screen stays frozen longer. Reversible, needs a reboot. Measure before/after."),
                 new L10n("?меньше жёстких хитчей", "?менше жорстких хітчів", "?fewer hard hitches"),
                 RegistryHive.LocalMachine, GraphicsDrivers,
                 new[] { new RegEntry("TdrDelay", RegistryValueKind.DWord, 10) },
@@ -472,10 +472,10 @@ public static class TweakCatalog
             // ПЛАЦЕБО — включён в Лабораторию именно чтобы дать это проверить/опровергнуть замером.
             new ExperimentalTweak(new RegistryTweak(
                 "irq8-priority", TweakCategory.CpuPower, RiskLevel.Medium,
-                new L10n("🧪 Приоритет RTC-таймера (IRQ8)", "🧪 Пріоритет RTC-таймера (IRQ8)", "🧪 RTC timer priority (IRQ8)"),
-                new L10n("Эксперимент. Повышает приоритет прерывания системных часов реального времени (IRQ8). Классический твик «за низкую задержку», но на современной Windows часто НИЧЕГО не даёт (плацебо). Добавлен, чтобы ты проверил это на своём железе бенчмарком, а не верил на слово. Обратимо, нужна перезагрузка.",
-                         "Експеримент. Підвищує пріоритет переривання системного годинника реального часу (IRQ8). Класичний твік «за низьку затримку», але на сучасній Windows часто НІЧОГО не дає (плацебо). Додано, щоб ти перевірив це на своєму залізі бенчмарком, а не вірив на слово. Оборотно, потрібне перезавантаження.",
-                         "Experiment. Raises the interrupt priority of the real-time clock (IRQ8). A classic 'low-latency' tweak that on modern Windows often does NOTHING (placebo). Included so you can verify that on your own hardware with the benchmark instead of taking it on faith. Reversible, needs a reboot."),
+                new L10n("Приоритет RTC-таймера (IRQ8)", "Пріоритет RTC-таймера (IRQ8)", "RTC timer priority (IRQ8)"),
+                new L10n("Повышает приоритет прерывания системных часов реального времени (IRQ8). Классический твик «за низкую задержку», но на современной Windows часто НИЧЕГО не даёт (плацебо). Добавлен, чтобы ты проверил это на своём железе бенчмарком, а не верил на слово. Обратимо, нужна перезагрузка.",
+                         "Підвищує пріоритет переривання системного годинника реального часу (IRQ8). Класичний твік «за низьку затримку», але на сучасній Windows часто НІЧОГО не дає (плацебо). Додано, щоб ти перевірив це на своєму залізі бенчмарком, а не вірив на слово. Оборотно, потрібне перезавантаження.",
+                         "Raises the interrupt priority of the real-time clock (IRQ8). A classic 'low-latency' tweak that on modern Windows often does NOTHING (placebo). Included so you can verify that on your own hardware with the benchmark instead of taking it on faith. Reversible, needs a reboot."),
                 new L10n("?латентность (скорее плацебо)", "?латентність (скоріше плацебо)", "?latency (likely placebo)"),
                 RegistryHive.LocalMachine, PriorityControl,
                 new[] { new RegEntry("IRQ8Priority", RegistryValueKind.DWord, 1) },
@@ -485,10 +485,10 @@ public static class TweakCatalog
             // систем чуть ровнее латентность, на части — без разницы (спорно). Многоядерный CPU.
             new ExperimentalTweak(new RegistryTweak(
                 "thread-dpc-off", TweakCategory.CpuPower, RiskLevel.Medium,
-                new L10n("🧪 Отключить потоковые DPC", "🧪 Вимкнути потокові DPC", "🧪 Disable threaded DPCs"),
-                new L10n("Эксперимент. Windows перестаёт выносить отложенные вызовы (DPC) в отдельный поток. Теоретически ниже задержка обработки прерываний — ровнее фреймтайм. Эффект СПОРНЫЙ (у многих нет разницы). Обратимо, нужна перезагрузка. Замерь до/после.",
-                         "Експеримент. Windows перестає виносити відкладені виклики (DPC) в окремий потік. Теоретично нижча затримка обробки переривань — рівніший фреймтайм. Ефект СУПЕРЕЧЛИВИЙ. Оборотно, потрібне перезавантаження. Зміряй до/після.",
-                         "Experiment. Windows stops offloading deferred procedure calls (DPCs) to a thread. In theory lower interrupt-handling latency — smoother frametime. Effect is DISPUTED (many see no difference). Reversible, needs a reboot. Measure before/after."),
+                new L10n("Отключить потоковые DPC", "Вимкнути потокові DPC", "Disable threaded DPCs"),
+                new L10n("Windows перестаёт выносить отложенные вызовы (DPC) в отдельный поток. Теоретически ниже задержка обработки прерываний — ровнее фреймтайм. Эффект СПОРНЫЙ (у многих нет разницы). Обратимо, нужна перезагрузка. Замерь до/после.",
+                         "Windows перестає виносити відкладені виклики (DPC) в окремий потік. Теоретично нижча затримка обробки переривань — рівніший фреймтайм. Ефект СУПЕРЕЧЛИВИЙ. Оборотно, потрібне перезавантаження. Зміряй до/після.",
+                         "Windows stops offloading deferred procedure calls (DPCs) to a thread. In theory lower interrupt-handling latency — smoother frametime. Effect is DISPUTED (many see no difference). Reversible, needs a reboot. Measure before/after."),
                 new L10n("?ровность (спорно)", "?рівність (спірно)", "?smoothness (disputed)"),
                 RegistryHive.LocalMachine, KernelKey,
                 new[] { new RegEntry("ThreadDpcEnable", RegistryValueKind.DWord, 0) },
@@ -499,10 +499,10 @@ public static class TweakCatalog
             // кэширует), но МОЖЕТ и навредить (отдаёт память под файловый кэш в ущерб игре). Только 16 ГБ+.
             new ExperimentalTweak(new RegistryTweak(
                 "large-system-cache", TweakCategory.Memory, RiskLevel.Medium,
-                new L10n("🧪 Увеличить системный кэш", "🧪 Збільшити системний кеш", "🧪 Large system cache"),
-                new L10n("Эксперимент. Windows отдаёт больше памяти под системный кэш. На машинах с запасом RAM иногда ровнее подгрузка, но МОЖЕТ и навредить (кэш теснит игру) — строго под замер. Только при 16 ГБ+ RAM. Обратимо, нужна перезагрузка.",
-                         "Експеримент. Windows віддає більше пам'яті під системний кеш. На машинах із запасом RAM іноді рівніше підвантаження, але МОЖЕ і нашкодити — строго під замір. Лише при 16 ГБ+ RAM. Оборотно, потрібне перезавантаження.",
-                         "Experiment. Windows gives more memory to the system cache. On RAM-rich machines loading can be smoother, but it MAY hurt (cache crowds the game) — measure carefully. 16 GB+ RAM only. Reversible, needs a reboot."),
+                new L10n("Увеличить системный кэш", "Збільшити системний кеш", "Large system cache"),
+                new L10n("Windows отдаёт больше памяти под системный кэш. На машинах с запасом RAM иногда ровнее подгрузка, но МОЖЕТ и навредить (кэш теснит игру) — строго под замер. Только при 16 ГБ+ RAM. Обратимо, нужна перезагрузка.",
+                         "Windows віддає більше пам'яті під системний кеш. На машинах із запасом RAM іноді рівніше підвантаження, але МОЖЕ і нашкодити — строго під замір. Лише при 16 ГБ+ RAM. Оборотно, потрібне перезавантаження.",
+                         "Windows gives more memory to the system cache. On RAM-rich machines loading can be smoother, but it MAY hurt (cache crowds the game) — measure carefully. 16 GB+ RAM only. Reversible, needs a reboot."),
                 new L10n("?подгрузка (риск навредить)", "?підвантаження (ризик нашкодити)", "?loading (may hurt)"),
                 RegistryHive.LocalMachine, MemoryManagement,
                 new[] { new RegEntry("LargeSystemCache", RegistryValueKind.DWord, 1) },
@@ -513,10 +513,10 @@ public static class TweakCatalog
             // плацебо. Значение 50 безопасно (слишком низкое ломает клики). Классика — под замер.
             new ExperimentalTweak(new RegistryTweak(
                 "mouse-queue-size", TweakCategory.Frametime, RiskLevel.Medium,
-                new L10n("🧪 Буфер очереди мыши", "🧪 Буфер черги миші", "🧪 Mouse queue size"),
-                new L10n("Эксперимент. Уменьшает буфер очереди данных мыши (100→50) — теоретически «свежее» ввод и ниже задержка. На практике ЧАСТО плацебо, но кто-то ощущает разницу. Значение 50 безопасно. Обратимо, нужна перезагрузка. Проверь на своём железе.",
-                         "Експеримент. Зменшує буфер черги даних миші (100→50) — теоретично «свіжіший» ввід і нижча затримка. На практиці ЧАСТО плацебо. Значення 50 безпечне. Оборотно, потрібне перезавантаження.",
-                         "Experiment. Shrinks the mouse data queue buffer (100→50) — in theory 'fresher' input and lower latency. In practice OFTEN placebo, though some feel it. 50 is safe. Reversible, needs a reboot. Verify on your own hardware."),
+                new L10n("Буфер очереди мыши", "Буфер черги миші", "Mouse queue size"),
+                new L10n("Уменьшает буфер очереди данных мыши (100→50) — теоретически «свежее» ввод и ниже задержка. На практике ЧАСТО плацебо, но кто-то ощущает разницу. Значение 50 безопасно. Обратимо, нужна перезагрузка. Проверь на своём железе.",
+                         "Зменшує буфер черги даних миші (100→50) — теоретично «свіжіший» ввід і нижча затримка. На практиці ЧАСТО плацебо. Значення 50 безпечне. Оборотно, потрібне перезавантаження.",
+                         "Shrinks the mouse data queue buffer (100→50) — in theory 'fresher' input and lower latency. In practice OFTEN placebo, though some feel it. 50 is safe. Reversible, needs a reboot. Verify on your own hardware."),
                 new L10n("?задержка ввода (часто плацебо)", "?затримка вводу (часто плацебо)", "?input lag (often placebo)"),
                 RegistryHive.LocalMachine, @"SYSTEM\CurrentControlSet\Services\mouclass\Parameters",
                 new[] { new RegEntry("MouseDataQueueSize", RegistryValueKind.DWord, 50) },
@@ -526,10 +526,10 @@ public static class TweakCatalog
             // Безопасно и обратимо; на современной Windows часто уже включено самой ОС.
             new ExperimentalTweak(new RegistryTweak(
                 "ntfs-no-lastaccess", TweakCategory.Memory, RiskLevel.Safe,
-                new L10n("🧪 NTFS: не писать время доступа", "🧪 NTFS: не писати час доступу", "🧪 NTFS: no last-access writes"),
-                new L10n("Эксперимент. NTFS перестаёт обновлять отметку «последнего доступа» при чтении файлов — меньше лишних фоновых записей на диск. Безопасно и обратимо. На новых Windows часто уже так по умолчанию (тогда эффекта нет). Замерь, если ловишь дисковые микрофризы.",
-                         "Експеримент. NTFS перестає оновлювати позначку «останнього доступу» — менше зайвих фонових записів на диск. Безпечно й оборотно. На нових Windows часто вже так (тоді ефекту немає).",
-                         "Experiment. NTFS stops updating the 'last access' timestamp on reads — fewer needless background disk writes. Safe and reversible. On recent Windows this is often already the default (then no effect). Measure if you get disk-related micro-stutter."),
+                new L10n("NTFS: не писать время доступа", "NTFS: не писати час доступу", "NTFS: no last-access writes"),
+                new L10n("NTFS перестаёт обновлять отметку «последнего доступа» при чтении файлов — меньше лишних фоновых записей на диск. Безопасно и обратимо. На новых Windows часто уже так по умолчанию (тогда эффекта нет). Замерь, если ловишь дисковые микрофризы.",
+                         "NTFS перестає оновлювати позначку «останнього доступу» — менше зайвих фонових записів на диск. Безпечно й оборотно. На нових Windows часто вже так (тоді ефекту немає).",
+                         "NTFS stops updating the 'last access' timestamp on reads — fewer needless background disk writes. Safe and reversible. On recent Windows this is often already the default (then no effect). Measure if you get disk-related micro-stutter."),
                 new L10n("?меньше записей на диск", "?менше записів на диск", "?fewer disk writes"),
                 RegistryHive.LocalMachine, @"SYSTEM\CurrentControlSet\Control\FileSystem",
                 new[] { new RegEntry("NtfsDisableLastAccessUpdate", RegistryValueKind.DWord, 1) })),

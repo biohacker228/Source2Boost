@@ -99,14 +99,14 @@ public static class Cs2Benchmark
         catch { return false; }
     }
 
-    // ---------- Воршоп-бенч-карта (детерминированный сценарий с авто-прогоном) ----------
+    // ---------- Воркшоп-бенч-карта (детерминированный сценарий с авто-прогоном) ----------
 
     /// <summary>ID карты-бенчмарка по умолчанию: «CS2 FPS BENCHMARK ANCIENT» (живая, формат
     /// вывода [VProf] FPS: Avg=..., P1=...). ID НАСТРАИВАЕМЫЙ — если карту удалят, юзер меняет
     /// на другую, не завися от одной конкретной.</summary>
     public const string DefaultWorkshopMapId = "3472126051";
 
-    /// <summary>Запустить CS2 сразу на воршоп-карту benchmark. <c>-condebug</c> заставляет игру
+    /// <summary>Запустить CS2 сразу на воркшоп-карту benchmark. <c>-condebug</c> заставляет игру
     /// писать консоль в console.log (оттуда читаем итог карты), <c>+host_workshop_map</c> грузит карту.
     /// Карта должна быть ПОДПИСАНА в мастерской (см. <see cref="OpenWorkshopPage"/>).</summary>
     public static bool LaunchWorkshopMap(string mapId)
