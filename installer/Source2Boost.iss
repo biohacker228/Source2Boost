@@ -39,6 +39,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "..\publish\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; PresentMon рядом с exe (для экрана «Мониторинг»)
 Source: "..\tools\PresentMon-2.5.1-x64.exe"; DestDir: "{app}"; DestName: "PresentMon.exe"; Flags: ignoreversion
+; Эталонная демка для авто-замера (если записана и лежит в assets\). Приложение само
+; скопирует её в ...\csgo\replays\ при первом авто-замере — пользователю консоль не нужна.
+#if FileExists("..\assets\s2b_bench.dem")
+Source: "..\assets\s2b_bench.dem"; DestDir: "{app}"; Flags: ignoreversion
+#endif
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
