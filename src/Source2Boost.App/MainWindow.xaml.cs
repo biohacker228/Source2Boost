@@ -933,22 +933,45 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
 
         _busy = true;
         BtnAutoBench.IsEnabled = false; BtnMeasure.IsEnabled = false;
-        // Ждём старт процесса CS2, затем даём фору на загрузку карты и старт авто-прогона сцены.
+        // Ждём старт процесса CS2.
         for (int i = 0; i < 90 && !PresentMonService.IsCs2Running(); i++)
         {
             TxtMonResult.Text = Loc.T("monitor.auto.launching");
             await Task.Delay(1000);
         }
-        TxtMonResult.Text = Loc.T("monitor.auto.loading");
-        await Task.Delay(25000);                            // загрузка карты + прогрев сцены
+
+        // Не гадаем тайминг: карта сама печатает итог «[VProf] FPS: Avg=…, P1=…» в конце прогона.
+        // Опрашиваем console.log, пока строка не появится (прогон длится минуты). Таймаут ~8 мин.
+        (double avg, double p1)? res = null;
+        for (int i = 0; i < 160 && res is null; i++)
+        {
+            TxtMonResult.Text = string.Format(Loc.T("monitor.auto.waiting"), i * 3);
+            await Task.Delay(3000);
+            res = Core.Cs2Benchmark.ParseVProfResult();
+        }
+        // Итог найден — подождём ещё чуть и перечитаем: возьмём ПОСЛЕДНЮЮ строку (если их несколько).
+        if (res is not null) { await Task.Delay(3000); res = Core.Cs2Benchmark.ParseVProfResult() ?? res; }
+
         _busy = false; BtnAutoBench.IsEnabled = true; BtnMeasure.IsEnabled = true;
 
-        await CaptureAndShow(60);                           // наш замер по детерминированной сцене карты
+        if (res is not { } r)
+        {
+            TxtMonResult.Text = "⚠ " + Loc.T("monitor.auto.timeout");
+            return;
+        }
 
-        // Кросс-чек: если карта записала свой итог в консоль — покажем рядом.
-        var v = Core.Cs2Benchmark.ParseVProfResult();
-        if (v is { } r)
-            TxtMonResult.Text += "\n" + string.Format(Loc.T("monitor.auto.vprof"), r.avg, r.p1);
+        // Данные карты: средний FPS + 1% low. Кладём в FrametimeStats (остальное неизвестно = 0),
+        // чтобы работали общая база «до/после» и рекомендация капа по 1% low.
+        var stats = new FrametimeStats(0, Math.Round(r.avg, 1), Math.Round(r.p1, 1), 0, 0, 0);
+        _lastStats = stats;
+        TxtMonResult.Text = string.Format(Loc.T("monitor.auto.result"), stats.AvgFps, stats.Low1Fps);
+        BtnSetBaseline.IsEnabled = true;
+        ShowDeltaVsBaseline(stats);
+        Ctx().Backup.SaveState("last-avg-fps", stats.AvgFps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Ctx().Backup.SaveState("last-low1-fps", stats.Low1Fps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        RefreshCs2();
+        _ = RefreshForecast();
+        BuildDashboard();
     }
 
     // ---------- A/B: база «до» и дельта «после» ----------
@@ -988,12 +1011,16 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         var b = LoadBaseline();
         if (b is null) { CardMonDelta.Visibility = Visibility.Collapsed; return; }
         // Для FPS и low «больше = лучше» (up=true); для стуттера и StdDev «меньше = лучше» (up=false).
-        TxtMonDelta.Text = string.Join("   ",
+        // Метрику показываем только если она есть в ОБОИХ замерах (замер карты даёт лишь FPS+1% low —
+        // остальное 0, эти строки пропускаем, чтобы не показывать бессмысленные нули).
+        var parts = new List<string> {
             D("FPS", now.AvgFps - b.AvgFps, up: true),
             D("1% low", now.Low1Fps - b.Low1Fps, up: true),
-            D("0.1% low", now.Low01Fps - b.Low01Fps, up: true),
-            D("стуттер", now.MaxStutterMs - b.MaxStutterMs, up: false, unit: " мс"),
-            D("ровность", now.StdDevMs - b.StdDevMs, up: false, unit: " мс"));
+        };
+        if (now.Low01Fps > 0 && b.Low01Fps > 0) parts.Add(D("0.1% low", now.Low01Fps - b.Low01Fps, up: true));
+        if (now.MaxStutterMs > 0 && b.MaxStutterMs > 0) parts.Add(D("стуттер", now.MaxStutterMs - b.MaxStutterMs, up: false, unit: " мс"));
+        if (now.StdDevMs > 0 && b.StdDevMs > 0) parts.Add(D("ровность", now.StdDevMs - b.StdDevMs, up: false, unit: " мс"));
+        TxtMonDelta.Text = string.Join("   ", parts);
         CardMonDelta.Visibility = Visibility.Visible;
 
         static string D(string name, double delta, bool up, string unit = "")
