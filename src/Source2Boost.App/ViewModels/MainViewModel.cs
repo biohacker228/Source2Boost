@@ -232,9 +232,14 @@ public sealed class MainViewModel : ObservableObject
 
     // ---------- Прогноз / оценка ----------
 
-    public double LastAvgFps()
+    public double LastAvgFps() => LoadFps("last-avg-fps");
+
+    /// <summary>Измеренный 1% low из последнего замера (0 если не мерили) — основа ровного капа.</summary>
+    public double LastLow1() => LoadFps("last-low1-fps");
+
+    private double LoadFps(string key)
     {
-        var s = Context.Backup.LoadState("last-avg-fps");
+        var s = Context.Backup.LoadState(key);
         return double.TryParse(s, System.Globalization.NumberStyles.Float,
             System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
     }

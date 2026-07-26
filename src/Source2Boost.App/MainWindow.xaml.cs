@@ -72,6 +72,10 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             await _vm.DetectHardwareAsync();
             PanelLoading.Visibility = Visibility.Collapsed;
 
+            // Эксперимент «держать таймер 0.5 мс» живёт в процессе — переустанавливаем запрос при старте.
+            if (Ctx().Backup.LoadState(Core.TimerResHoldTweak.StateKey) == "1")
+                Core.TimerResolution.RequestMax();
+
             ApplyTexts();
             // Первый запуск (ещё не сканировали через приветствие) → экран приветствия со сканом.
             bool welcomed = Ctx().Backup.LoadState("welcomed") == "1";
@@ -736,12 +740,14 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         // Рекомендация лимита FPS: у стабильного потолка по СПОСОБНОСТИ железа —
         // реальный замер, иначе прогноз (герцовка на кап не влияет, см. RecommendFpsCap).
         double predicted = _hw is null ? 0 : FpsEstimator.HeuristicBaseline(_hw);
-        int rec = Cs2Config.RecommendFpsCap(_vm.LastAvgFps(), predicted);
+        // Если есть измеренный 1% low — кап считаем от него (ровнее пейсинг), иначе от среднего/прогноза.
+        int rec = Cs2Config.RecommendFpsCap(_vm.LastAvgFps(), predicted, _vm.LastLow1());
         // Своё значение пользователя имеет приоритет и переживает перезапуск приложения.
         var saved = Ctx().Backup.LoadState("fps-cap");
         if (!string.IsNullOrWhiteSpace(saved)) TxtFpsCap.Text = saved;
         else if (string.IsNullOrWhiteSpace(TxtFpsCap.Text)) TxtFpsCap.Text = rec.ToString();
-        TxtFpsHint.Text = string.Format(Loc.T("cs2.fps.hint"), rec);
+        // Подсказка объясняет базу расчёта: если мерили 1% low — говорим об этом честно.
+        TxtFpsHint.Text = string.Format(Loc.T(_vm.LastLow1() > 0 ? "cs2.fps.hint.low1" : "cs2.fps.hint"), rec);
 
         RefreshVideoConfig();
     }
@@ -875,6 +881,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         ShowDeltaVsBaseline(stats);               // если есть база — показать сравнение
         Ctx().Backup.SaveState("last-avg-fps",
             stats.AvgFps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Ctx().Backup.SaveState("last-low1-fps",
+            stats.Low1Fps.ToString(System.Globalization.CultureInfo.InvariantCulture));
         RefreshCs2();
         _ = RefreshForecast();
         BuildDashboard();   // вердикт узкого места теперь учитывает GPU-busy из замера

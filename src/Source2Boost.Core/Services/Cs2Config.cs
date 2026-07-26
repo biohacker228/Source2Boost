@@ -50,8 +50,13 @@ public static class Cs2Config
     /// «подрезаются» до уровня, который система держит и в тяжёлых — меньше скачков.
     /// Если способность неизвестна — 0 (без лимита): это безопасно для задержки.
     /// </summary>
-    public static int RecommendFpsCap(double measuredAvg = 0, double predictedAvg = 0)
+    public static int RecommendFpsCap(double measuredAvg = 0, double predictedAvg = 0, double measuredLow1 = 0)
     {
+        // Лучший ориентир РОВНОГО пейсинга — измеренный 1% low: это FPS, который система держит
+        // даже в тяжёлых сценах. Кап чуть ниже него (98%) = почти нулевые скачки фреймтайма.
+        // Компромисс: средний FPS «подрезается» ради ровности (это осознанный выбор про-плавность).
+        if (measuredLow1 > 0) return Math.Max(60, (int)Math.Floor(measuredLow1 * 0.98));
+        // Нет 1% low — опираемся на среднюю способность (замер важнее прогноза).
         double basis = measuredAvg > 0 ? measuredAvg : predictedAvg;
         if (basis <= 0) return 0;                        // ничего не знаем — без лимита
         return Math.Max(60, (int)Math.Floor(basis * 0.98));

@@ -534,6 +534,9 @@ public static class TweakCatalog
                 RegistryHive.LocalMachine, @"SYSTEM\CurrentControlSet\Control\FileSystem",
                 new[] { new RegEntry("NtfsDisableLastAccessUpdate", RegistryValueKind.DWord, 1) })),
 
+            // Активное удержание точного таймера 0.5 мс (пока работает приложение).
+            new TimerResHoldTweak(),
+
             // ==== БЕЗБАШЕННОЕ (Extreme) — НЕ входит в профили, только вручную ====
             new DefenderRealtimeOffTweak(),
         };
