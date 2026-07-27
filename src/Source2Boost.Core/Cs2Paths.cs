@@ -24,6 +24,22 @@ public static class Cs2Paths
         catch { return null; }
     }
 
+    /// <summary>Полный путь к steam.exe (SteamPath\steam.exe), если существует; иначе null.
+    /// Нужен для запуска игры через Steam командой <c>steam.exe -applaunch 730 &lt;args&gt;</c> —
+    /// это идёт ЧЕРЕЗ Steam (IPC-канал цел, нет фаталки «Cannot create IPC pipe») и при этом
+    /// корректно передаёт игре и dash-опции (-condebug), и +команды (+fps_max 0).</summary>
+    public static string? SteamExePath()
+    {
+        var steam = SteamPath();
+        if (steam is null) return null;
+        try
+        {
+            var exe = Path.Combine(steam, "steam.exe");
+            return File.Exists(exe) ? exe : null;
+        }
+        catch { return null; }
+    }
+
     /// <summary>Все библиотеки Steam (корневые пути), включая основную установку.</summary>
     public static IReadOnlyList<string> LibraryFolders()
     {

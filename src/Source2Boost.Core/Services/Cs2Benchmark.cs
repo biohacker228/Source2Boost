@@ -115,27 +115,29 @@ public static class Cs2Benchmark
     /// извне в CS2 нельзя (netcon удалён, VConsole-подключение = риск VAC). Поэтому карту пользователь
     /// выбирает сам в игре (Играть → Мастерская) — зато мы не привязаны к конкретной карте.
     ///
-    /// ЗАПУСК: напрямую cs2.exe (steam://run в CS2 не передаёт «+команды»), рабочая папка = ...\bin\win64.
-    /// Фолбэк на steam:// если exe не найден.</summary>
+    /// ЗАПУСК: <c>steam.exe -applaunch 730 &lt;args&gt;</c> — единственный надёжный способ. Прямой запуск
+    /// cs2.exe даёт фаталку «Cannot create IPC pipe to Steam client process» (игра стартует мимо Steam
+    /// и не может открыть IPC-канал), а steam://run НЕ передаёт «+команды». А вот -applaunch идёт ЧЕРЕЗ
+    /// Steam (IPC цел) и корректно прокидывает и dash-опции, и +команды. Фолбэк на steam:// если steam.exe
+    /// не найден (там хотя бы -condebug дойдёт).</summary>
     public static bool LaunchForBenchmark()
     {
         const string args = "-condebug +fps_max 0";
-        var exe = Cs2Paths.Cs2ExePath();
-        if (exe is not null)
+        var steamExe = Cs2Paths.SteamExePath();
+        if (steamExe is not null)
         {
             try
             {
-                var dir = Path.GetDirectoryName(exe)!;
-                Logger.Info($"benchmark: launch cs2.exe direct, exe={exe}, args={args}");
-                Process.Start(new ProcessStartInfo(exe)
+                var full = $"-applaunch {Cs2Paths.Cs2AppId} {args}";
+                Logger.Info($"benchmark: launch via steam.exe -applaunch, exe={steamExe}, args={full}");
+                Process.Start(new ProcessStartInfo(steamExe)
                 {
-                    Arguments = args,
-                    WorkingDirectory = dir,
+                    Arguments = full,
                     UseShellExecute = false,
                 });
                 return true;
             }
-            catch (Exception ex) { Logger.Info($"benchmark: direct launch failed ({ex.Message}), fallback to steam://"); }
+            catch (Exception ex) { Logger.Info($"benchmark: steam.exe -applaunch failed ({ex.Message}), fallback to steam://"); }
         }
         Logger.Info($"benchmark: launch via steam://, args={args}");
         return LaunchViaSteam(args);
