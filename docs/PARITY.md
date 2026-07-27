@@ -27,7 +27,7 @@
 
 `spectre-off` (самый жирный выигрыш на Skylake), `standby-clean` (ISLC-подобно, ежедневно),
 `mmcss-games`, `system-responsiveness`, `mouse-accel-off`, `gpu-preference-cs2`,
-`cs2-high-priority` (IFEO), `timer-resolution-global`, `gpu-hags`, `network-throttling-off`,
+`cs2-high-priority` (IFEO), `timer-resolution-global`, `gpu-hags-off` (Лаборатория, A/B), `network-throttling-off`,
 `memory-compression-off`, `nvidia-max-perf` (PowerMizer), `defender-exclusion-cs2`,
 BIOS-советник по железу, оценка оптимизации 0–100, прогноз FPS, склонения RU/UK.
 
@@ -41,6 +41,12 @@ BIOS-советник по железу, оценка оптимизации 0�
 - ⚠️ **DNS switcher** (cs2-omz) — это отдельная сетевая фича, не про FPS; свой пинг-тест у нас
   через Мониторинг.
 - ⚠️ **LargeSystemCache=0 / SSD TRIM on** — как правило уже дефолт Windows, прироста нет.
+- ❌ **Мёртвый CS:GO-мусор из SEO-гайдов** (перепроверено вебом 2026-07, разные авторы EN/RU):
+  `-tickrate 128` (в CS2 сабтик, тикрейта нет), `+cl_forcepreload 1` (удалён), `mat_queue_mode`,
+  `-d3d9ex`, `+mat_disable_fancy_blending 1`, `-r_emulate_g`, `net_graph` — не существуют/не
+  действуют в Source 2. Это подтверждают и адекватные RU-источники (cybersport-metaratings, profilerr).
+- ⚠️ **HAGS forced ON, `-threads N`, `bcdedit disabledynamictick` / форс HPET** — спорные и/или
+  железозависимые; не форсим. HAGS перенесён в Лабораторию как A/B-эксперимент (`gpu-hags-off`).
 
 ## Кандидаты (🔜, обсудить)
 

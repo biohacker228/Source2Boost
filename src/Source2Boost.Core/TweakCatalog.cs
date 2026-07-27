@@ -210,16 +210,8 @@ public static class TweakCatalog
                 new[] { new RegEntry("GlobalTimerResolutionRequests", RegistryValueKind.DWord, 1) },
                 requiresRestart: true),
 
-            new RegistryTweak(
-                "gpu-hags", TweakCategory.Frametime, RiskLevel.Medium,
-                new L10n("Аппаратное планирование GPU", "Апаратне планування GPU", "Hardware-accelerated GPU scheduling"),
-                new L10n("Включает аппаратное планирование GPU: видеокарта сама управляет очередью кадров — ниже задержка их подачи.",
-                         "Вмикає апаратне планування GPU: відеокарта сама керує чергою кадрів — нижча затримка їх подачі.",
-                         "Enables hardware GPU scheduling: the card manages its own frame queue — lower submission latency."),
-                new L10n("-латентность", "-латентність", "-latency"),
-                RegistryHive.LocalMachine, GraphicsDrivers,
-                new[] { new RegEntry("HwSchMode", RegistryValueKind.DWord, 2) },
-                requiresRestart: true),
+            // (HAGS убран из форсируемых дефолтов — он спорный и железозависимый; перенесён в
+            //  Лабораторию как A/B-эксперимент «отключить HAGS», см. gpu-hags-off ниже.)
 
             // ---- Память: фиксированный файл подкачки (Medium, только ≤8 ГБ RAM) ----
             new PagefileFixedTweak(),
@@ -467,6 +459,21 @@ public static class TweakCatalog
                 new[] { new RegEntry("TdrDelay", RegistryValueKind.DWord, 10) },
                 requiresRestart: true,
                 supported: ctx => ctx.Hardware.HasDiscreteGpu)),
+
+            // HAGS (аппаратное планирование GPU) — СПОРНЫЙ и ЖЕЛЕЗОЗАВИСИМЫЙ. На соревновательной
+            // CS2, особенно на старых GPU / Windows 10 (наша ЦА), ВЫКЛючение часто даёт ровнее
+            // фреймтайм и меньше статтера; на новых GPU / Windows 11 иногда лучше ВКЛючённым.
+            // Поэтому в профилях не форсим — даём проверить замером именно выключение.
+            new ExperimentalTweak(new RegistryTweak(
+                "gpu-hags-off", TweakCategory.Frametime, RiskLevel.Medium,
+                new L10n("Отключить аппаратное планирование GPU", "Вимкнути апаратне планування GPU", "Disable hardware GPU scheduling"),
+                new L10n("Выключает HAGS (HwSchMode=1). На соревновательной CS2, особенно на старых видеокартах и Windows 10, это часто убирает микро-статтер и делает фреймтайм ровнее — GPU перестаёт сам управлять очередью кадров. Но эффект ЖЕЛЕЗОЗАВИСИМЫЙ: на новых GPU и Windows 11 иногда лучше наоборот, с включённым. Строго под замер до/после. Обратимо, нужна перезагрузка.",
+                         "Вимикає HAGS (HwSchMode=1). На змагальній CS2, особливо на старих відеокартах і Windows 10, це часто прибирає мікро-статтер і робить фреймтайм рівнішим — GPU перестає сам керувати чергою кадрів. Але ефект ЗАЛІЗОЗАЛЕЖНИЙ: на нових GPU і Windows 11 іноді краще навпаки. Строго під замір до/після. Оборотно, потрібне перезавантаження.",
+                         "Turns HAGS off (HwSchMode=1). In competitive CS2, especially on older GPUs and Windows 10, this often removes micro-stutter and smooths frametime — the GPU no longer manages its own frame queue. But the effect is HARDWARE-DEPENDENT: on newer GPUs and Windows 11 leaving it on is sometimes better. Measure before/after. Reversible, needs a reboot."),
+                new L10n("?ровность (железозависимо)", "?рівність (залізозалежно)", "?smoothness (hardware-dependent)"),
+                RegistryHive.LocalMachine, GraphicsDrivers,
+                new[] { new RegEntry("HwSchMode", RegistryValueKind.DWord, 1) },
+                requiresRestart: true)),
 
             // Классический «латентный» твик приоритета RTC (IRQ8). На современной Windows часто
             // ПЛАЦЕБО — включён в Лабораторию именно чтобы дать это проверить/опровергнуть замером.
