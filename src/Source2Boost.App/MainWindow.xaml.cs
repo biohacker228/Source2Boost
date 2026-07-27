@@ -860,37 +860,24 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     private void SubscribeMap_Click(object sender, RoutedEventArgs e)
         => Core.Cs2Benchmark.OpenWorkshopPage(TxtBenchMapId.Text?.Trim() ?? BenchMapId());
 
-    /// <summary>Авто-замер по воркшоп-карте бенчмарка: запускает CS2 с -condebug на нужную карту,
-    /// ждёт загрузку и авто-прогон сцены, снимает наш PresentMon (тот же сценарий = честный A/B),
-    /// плюс кросс-чек по строке [VProf] из консоли карты. Требует, чтобы CS2 был закрыт (мы сами
-    /// запускаем его с нужными флагами) и карта была подписана в мастерской.</summary>
+    /// <summary>Полу-авто замер по ЛЮБОЙ карте-бенчмарку. Прога запускает CS2 с -condebug (пишет
+    /// console.log) и +fps_max 0 (снять кап на сессию), а КАРТУ пользователь выбирает сам в игре
+    /// (Играть → Мастерская → карта → Go). Причина ручного шага: CS2 игнорирует host_workshop_map
+    /// как стартовую команду, а подать команду извне нельзя (netcon удалён, VConsole = риск VAC).
+    /// Мы ловим итог ЛЮБОЙ карты из консоли (строка [VProf] FPS: Avg=..., P1=...) и показываем A/B.</summary>
     private async void AutoBench_Click(object sender, RoutedEventArgs e)
     {
         if (_busy) return;
-        var mapId = TxtBenchMapId.Text?.Trim() ?? "";
-        if (!Core.Cs2Benchmark.IsValidId(mapId))
-        {
-            await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.badid"));
-            return;
-        }
 
-        // CS2 уже запущен — карту извне не сменить (нет доступа к консоли). Просим закрыть.
+        // CS2 должен быть закрыт — мы запускаем его сами с -condebug (иначе console.log не пишется).
         if (PresentMonService.IsCs2Running())
         {
             await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.running"));
             return;
         }
 
-        // Карта не подписана/не скачана — Steam не даст её загрузить. Ведём на разовую подписку.
-        if (!Core.Cs2Benchmark.IsMapDownloaded(mapId))
-        {
-            var sub = await ShowConfirmDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.subscribe"));
-            if (sub) Core.Cs2Benchmark.OpenWorkshopPage(mapId);
-            return;
-        }
-
         Core.Cs2Benchmark.ClearConsoleLog();               // чтобы не поймать прошлый VProf-итог
-        if (!Core.Cs2Benchmark.LaunchWorkshopMap(mapId))
+        if (!Core.Cs2Benchmark.LaunchForBenchmark())
         {
             await ShowInfoDialog(Loc.T("monitor.auto.title"), Loc.T("monitor.auto.launchfail"));
             return;
@@ -905,10 +892,11 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             await Task.Delay(1000);
         }
 
-        // Не гадаем тайминг: карта сама печатает итог «[VProf] FPS: Avg=…, P1=…» в конце прогона.
-        // Опрашиваем console.log, пока строка не появится (прогон длится минуты). Таймаут ~8 мин.
+        // Пользователь запускает карту-бенчмарк в Мастерской; карта сама печатает итог
+        // «[VProf] FPS: Avg=…, P1=…» в конце прогона. Опрашиваем console.log, пока строка не появится.
+        // Таймаут ~10 мин (навигация в меню + прогон).
         (double avg, double p1)? res = null;
-        for (int i = 0; i < 160 && res is null; i++)
+        for (int i = 0; i < 200 && res is null; i++)
         {
             TxtMonResult.Text = string.Format(Loc.T("monitor.auto.waiting"), i * 3);
             await Task.Delay(3000);

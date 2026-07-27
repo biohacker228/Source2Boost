@@ -509,7 +509,7 @@
                         <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16">
                             <StackPanel>
                                 <TextBlock x:Name="TxtMonHint" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="12.5"
-                                           Text="Замер полностью автоматический: программа сама запускает CS2, грузит воркшоп-карту бенчмарка и по окончании прогона берёт её итог. Один и тот же сценарий каждый раз — честное «до/после»." />
+                                           Text="Замер полу-автоматический: программа запускает CS2 с нужными флагами, ты один раз выбираешь карту-бенчмарк в Мастерской (любую, чей итог идёт в консоль), а результат и сравнение «до/после» программа ловит сама." />
                                 <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
                                     <Button x:Name="BtnAutoBench" Click="AutoBench_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
                                         <Button.Template>
@@ -526,14 +526,14 @@
                                     </Button>
                                     <ui:Button x:Name="BtnSetBaseline" Content="Запомнить как «до»" Click="SetBaseline_Click" Margin="10,0,0,0" Padding="14,10" Cursor="Hand" IsEnabled="False" />
                                 </StackPanel>
-                                <!-- Настройка воркшоп-карты бенчмарка (ID меняется, если карту удалят) -->
+                                <!-- Рекомендуемая карта (необязательно) — быстрая подписка на бенч-карту -->
                                 <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                    <TextBlock x:Name="LblBenchMap" Text="Карта-бенчмарк (ID мастерской):" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,0,8,0" />
+                                    <TextBlock x:Name="LblBenchMap" Text="Рекомендуемая карта (необязательно):" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,0,8,0" />
                                     <TextBox x:Name="TxtBenchMapId" Width="140" VerticalAlignment="Center" FontSize="13" Padding="8,5" LostFocus="BenchMapId_LostFocus" />
                                     <ui:Button x:Name="BtnSubscribeMap" Content="Открыть карту (подписаться)" Click="SubscribeMap_Click" Margin="8,0,0,0" Padding="12,7" Cursor="Hand" Icon="{ui:SymbolIcon Open24}" />
                                 </StackPanel>
                                 <TextBlock x:Name="TxtAutoBenchHint" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="11.5" Margin="0,8,0,0"
-                                           Text="Карту нужно один раз подписать в мастерской (кнопка «Открыть карту» → «Подписаться» в Steam). CS2 должен быть закрыт — программа сама запустит его с нужными флагами." />
+                                           Text="CS2 должен быть закрыт — программа сама запустит его с -condebug и fps_max 0. Дальше в игре: Играть → Мастерская → карта-бенчмарк → Go. Подойдёт любая карта, выводящая итог в консоль (Avg / P1)." />
                                 <TextBlock x:Name="TxtMonResult" TextWrapping="Wrap" Foreground="{DynamicResource Text}" FontFamily="Consolas" FontSize="13" Margin="0,16,0,0" />
                                 <TextBlock x:Name="TxtMonBaseline" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" />
                                 <!-- Сравнение до/после (появляется, когда есть база и свежий замер) -->

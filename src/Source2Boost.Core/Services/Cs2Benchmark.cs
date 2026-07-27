@@ -106,19 +106,20 @@ public static class Cs2Benchmark
     /// на другую, не завися от одной конкретной.</summary>
     public const string DefaultWorkshopMapId = "3472126051";
 
-    /// <summary>Запустить CS2 сразу на воркшоп-карту benchmark. <c>-condebug</c> заставляет игру
-    /// писать консоль в console.log (оттуда читаем итог карты), <c>+host_workshop_map</c> грузит карту,
-    /// <c>+fps_max 0</c> СНИМАЕТ лимит FPS на время прогона (иначе бенчмарк упрётся в кап). fps_max 0 —
-    /// разовая команда на сессию: autoexec не трогаем, обычный кап вернётся сам при нормальном запуске.
+    /// <summary>Запустить CS2 для бенчмарка. <c>-condebug</c> заставляет игру писать консоль в
+    /// console.log, откуда мы ловим ИТОГ ЛЮБОЙ карты-бенчмарка (строка <c>[VProf] FPS: Avg=..., P1=...</c>
+    /// — общий формат популярных бенч-карт). <c>+fps_max 0</c> снимает лимит FPS на сессию (иначе замер
+    /// упрётся в кап); autoexec не трогаем — обычный кап вернётся при нормальном запуске.
     ///
-    /// ЗАПУСК: напрямую cs2.exe, а НЕ через steam://run — Valve не передаёт «+команды» через //args в
-    /// steam://run для CS2 (игра просто открывается в меню). КРИТИЧНО: рабочая папка = ...\bin\win64,
-    /// иначе игра не находит контент и «ничего не происходит». Если exe не найден — фолбэк на steam://.
-    /// Карта должна быть ПОДПИСАНА в мастерской (см. <see cref="OpenWorkshopPage"/>).</summary>
-    public static bool LaunchWorkshopMap(string mapId)
+    /// Карту НЕ грузим сами: CS2 игнорирует host_workshop_map как стартовую команду, а подать команду
+    /// извне в CS2 нельзя (netcon удалён, VConsole-подключение = риск VAC). Поэтому карту пользователь
+    /// выбирает сам в игре (Играть → Мастерская) — зато мы не привязаны к конкретной карте.
+    ///
+    /// ЗАПУСК: напрямую cs2.exe (steam://run в CS2 не передаёт «+команды»), рабочая папка = ...\bin\win64.
+    /// Фолбэк на steam:// если exe не найден.</summary>
+    public static bool LaunchForBenchmark()
     {
-        if (!IsValidId(mapId)) return false;
-        var args = $"-condebug +host_workshop_map {mapId} +fps_max 0";
+        const string args = "-condebug +fps_max 0";
         var exe = Cs2Paths.Cs2ExePath();
         if (exe is not null)
         {
@@ -129,7 +130,7 @@ public static class Cs2Benchmark
                 Process.Start(new ProcessStartInfo(exe)
                 {
                     Arguments = args,
-                    WorkingDirectory = dir,   // без этого CS2 не найдёт контент и не стартует карту
+                    WorkingDirectory = dir,
                     UseShellExecute = false,
                 });
                 return true;
