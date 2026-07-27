@@ -305,7 +305,7 @@
                                         <TextBlock x:Name="TxtBoostModeTitle" Text="Игровой фокус" FontWeight="Bold" FontSize="14.5" Foreground="{DynamicResource Text}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <TextBlock x:Name="TxtBoostModeDesc" TextWrapping="Wrap" FontSize="12.5" Foreground="{DynamicResource Text2}" Margin="0,4,14,0"
-                                               Text="Замораживает лишний фон (браузер, облачные синхронизации) и чистит память. Discord, музыку и Steam не трогает. Освобождает ядра CPU — выше 1% low, меньше стуттера." />
+                                               Text="Замораживает лишний фон (браузер, облачные синхронизации) и чистит память. Discord, музыку и Steam не трогает. Освобождает ядра CPU — выше 1% low, меньше статтера." />
                                     <TextBlock x:Name="TxtBoostModeStatus" FontSize="12" Foreground="{DynamicResource Muted}" Margin="0,6,0,0" Visibility="Collapsed" />
                                 </StackPanel>
                                 <ui:ToggleSwitch x:Name="BoostToggle" Grid.Column="1" VerticalAlignment="Center" Click="BoostToggle_Click" />
@@ -624,10 +624,10 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Против стуттера: разовый сброс кэша шейдеров (лечит фризы на любом железе) -->
+                        <!-- Против статтера: разовый сброс кэша шейдеров (лечит фризы на любом железе) -->
                         <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16,14" Margin="0,14,0,0">
                             <StackPanel>
-                                <TextBlock x:Name="TxtShaderTitle" Text="Лечение стуттера: сброс шейдеров" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="SemiBold" />
+                                <TextBlock x:Name="TxtShaderTitle" Text="Лечение статтера: сброс шейдеров" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="SemiBold" />
                                 <TextBlock x:Name="TxtShaderDesc" TextWrapping="Wrap" Foreground="{DynamicResource Text2}" FontSize="12.5" Margin="0,6,0,0"
                                            Text="Битый кэш шейдеров CS2/драйвера — частая причина фризов при стрельбе и пике даже на мощном ПК. Разово чистим его (пересоберётся при следующем запуске: первые пару минут догрузка, потом ровно). Делай после крупного обновления или если появились дёргания." />
                                 <TextBlock x:Name="TxtShaderStatus" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,8,0,0" Visibility="Collapsed" />

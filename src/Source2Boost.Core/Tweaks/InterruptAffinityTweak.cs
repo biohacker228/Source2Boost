@@ -8,7 +8,7 @@ namespace Source2Boost.Core;
 /// (…\Device Parameters\Interrupt Management\Affinity Policy: DevicePolicy=4
 /// «SpecifiedProcessors» + AssignmentSetOverride = маска всех ядер, КРОМЕ CPU0).
 /// CPU0 обслуживает большинство системных DPC/ISR — сняв с него прерывания тяжёлой GPU,
-/// получаем ровнее фреймтайм и меньше стуттера на многоядерных системах.
+/// получаем ровнее фреймтайм и меньше статтера на многоядерных системах.
 /// Устройство ищется консервативно: только PCI дисплейные адаптеры NVIDIA (VEN_10DE)
 /// или AMD (VEN_1002). Точный откат: исходные значения по каждому устройству сохраняются.
 /// High, нужна перезагрузка. Обратимо.
@@ -33,7 +33,7 @@ public sealed class InterruptAffinityTweak : ITweak
         "🔴 Відводить переривання відеокарти з ядра №0 на інші ядра. Ядро №0 зазвичай зайняте системними задачами — розвантаживши його від переривань важкої відеокарти, отримуємо рівніший фреймтайм. Оборотно, потрібне перезавантаження.",
         "🔴 Steers the GPU's interrupts off core #0 onto the other cores. Core #0 is usually busy with system work — offloading the heavy GPU's interrupts there yields steadier frametime. Reversible, needs a reboot.");
     public L10n Impact { get; } = new(
-        "-стуттер прерываний", "-стуттер переривань", "-interrupt stutter");
+        "-статтер прерываний", "-статтер переривань", "-interrupt stutter");
 
     // Многоядерная система с дискретной GPU: снятие CPU0 оставляет достаточно ядер.
     public bool IsSupported(TweakContext ctx) => ctx.Hardware.HasDiscreteGpu && ctx.Hardware.CpuThreads >= 4;

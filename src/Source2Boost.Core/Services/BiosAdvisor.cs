@@ -105,8 +105,8 @@ public static class BiosAdvisor
                 new L10n("E-ядра мешают CS2 (Intel-гибрид)",
                          "E-ядра заважають CS2 (Intel-гібрид)",
                          "E-cores hurt CS2 (Intel hybrid)"),
-                new L10n("У тебя гибридный CPU (P + E ядра). Source 2 иногда уводит главный поток на медленные E-ядра → просадки и стуттер. Наш твик «CS2 на правильные ядра» держит игру на P-ядрах софтом. Надёжнее — выключить E-ядра в BIOS на время игры: ищи «CPU E-cores» / «Efficient-cores» → Disabled, у ASUS есть «Legacy Game Compatibility Mode». (Названия в BIOS английские.)",
-                         "У тебе гібридний CPU (P + E ядра). Source 2 іноді тягне головний потік на повільні E-ядра → просадки та стуттер. Наш твік «CS2 на правильні ядра» тримає гру на P-ядрах софтом. Надійніше — вимкнути E-ядра в BIOS: шукай «CPU E-cores» / «Efficient-cores» → Disabled, в ASUS є «Legacy Game Compatibility Mode».",
+                new L10n("У тебя гибридный CPU (P + E ядра). Source 2 иногда уводит главный поток на медленные E-ядра → просадки и статтер. Наш твик «CS2 на правильные ядра» держит игру на P-ядрах софтом. Надёжнее — выключить E-ядра в BIOS на время игры: ищи «CPU E-cores» / «Efficient-cores» → Disabled, у ASUS есть «Legacy Game Compatibility Mode». (Названия в BIOS английские.)",
+                         "У тебе гібридний CPU (P + E ядра). Source 2 іноді тягне головний потік на повільні E-ядра → просадки та статтер. Наш твік «CS2 на правильні ядра» тримає гру на P-ядрах софтом. Надійніше — вимкнути E-ядра в BIOS: шукай «CPU E-cores» / «Efficient-cores» → Disabled, в ASUS є «Legacy Game Compatibility Mode».",
                          "You have a hybrid CPU (P + E cores). Source 2 sometimes parks its main thread on slow E-cores → drops and stutter. Our 'Pin CS2 to the right cores' tweak keeps it on P-cores in software. More reliable: disable E-cores in BIOS — look for 'CPU E-cores' / 'Efficient-cores' → Disabled (ASUS: 'Legacy Game Compatibility Mode').")));
         }
         else if (topo.Kind == CpuTopologyKind.AmdMultiCcd)
@@ -118,7 +118,7 @@ public static class BiosAdvisor
                          "Multi-CCD Ryzen: keep CS2 on the fast CCD"),
                 new L10n((x3d
                     ? "У тебя X3D с двумя CCD: 3D-кэш только на первом, и если CS2 уедет на второй CCD — теряешь и кэш, и FPS. Поставь свежий AMD Chipset Driver (в нём «3D V-Cache Performance Optimizer» сам держит игры на кэш-CCD) и в BIOS включи «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). "
-                    : "У тебя Ryzen с двумя CCD: переход потока между CCD добавляет задержку → стуттер в CS2. В BIOS включи «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). Как вариант — оставить 1 CCD («CCD Control» → 1) на время игры. ")
+                    : "У тебя Ryzen с двумя CCD: переход потока между CCD добавляет задержку → статтер в CS2. В BIOS включи «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). Как вариант — оставить 1 CCD («CCD Control» → 1) на время игры. ")
                     + "Наш твик «CS2 на правильные ядра» уже сажает игру на первый CCD софтом.",
                     (x3d
                     ? "У тебе X3D з двома CCD: 3D-кеш лише на першому. Постав свіжий AMD Chipset Driver («3D V-Cache Performance Optimizer») і в BIOS увімкни «CPPC» + «CPPC Preferred Cores» (Enabled/Auto). "

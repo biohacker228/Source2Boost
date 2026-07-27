@@ -142,11 +142,11 @@ public static class TweakCatalog
                 supported: _ => cs2Exe is not null),
 
             // ПРИМ.: ShaderCacheTweak намеренно УБРАН из авто-каталога/профилей.
-            // Постоянное стирание шейдеров вредно (дольше загрузка + стуттер рекомпиляции),
+            // Постоянное стирание шейдеров вредно (дольше загрузка + статтер рекомпиляции),
             // поэтому ежедневный таймер удалён. Класс сохранён для ручной кнопки
             // (ShaderCacheTweak.CleanNow()); старую вредную задачу сносит StandbyCleanTweak.Apply.
 
-            // ---- Память (Safe) — анти-стуттер вместо shader-таймера ----
+            // ---- Память (Safe) — анти-статтер вместо shader-таймера ----
             // Периодическая очистка standby-списка памяти каждые 5 минут (ISLC-подобно).
             new StandbyCleanTweak(),
 
@@ -297,10 +297,10 @@ public static class TweakCatalog
                 RegistryHive.LocalMachine, PowerThrottlingKey,
                 new[] { new RegEntry("PowerThrottlingOff", RegistryValueKind.DWord, 1) }),
 
-            // ---- DWM / MPO (Medium, анти-стуттер) ----
+            // ---- DWM / MPO (Medium, анти-статтер) ----
             new RegistryTweak(
                 "mpo-off", TweakCategory.Frametime, RiskLevel.Medium,
-                new L10n("Отключить MPO (анти-стуттер)", "Вимкнути MPO (анти-стуттер)", "Disable MPO (anti-stutter)"),
+                new L10n("Отключить MPO (анти-статтер)", "Вимкнути MPO (анти-статтер)", "Disable MPO (anti-stutter)"),
                 new L10n("Отключает Multi-Plane Overlay — частую причину мерцания и микрофризов рабочего стола и игры на драйверах NVIDIA. Обратимо.",
                          "Вимикає Multi-Plane Overlay — часту причину мерехтіння та мікрофризів робочого столу й гри на драйверах NVIDIA. Оборотно.",
                          "Turns off Multi-Plane Overlay — a common cause of desktop/game flicker and micro-stutter on NVIDIA drivers. Reversible."),

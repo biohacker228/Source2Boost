@@ -42,8 +42,8 @@ public static class BottleneckAnalyzer
         {
             ramLevel = BiosTipLevel.Warning;
             ramTitle = new L10n("Память в одноканале", "Пам'ять в одноканалі", "Single-channel RAM");
-            ru.Add("Стоит одна планка — CS2 очень чувствителен к памяти. Вторая одинаковая планка (двухканал) даёт +20–40% FPS и убирает часть стуттера. Самый крупный апгрейд за копейки.");
-            uk.Add("Стоїть одна планка — CS2 дуже чутливий до пам'яті. Друга однакова планка (двоканал) дає +20–40% FPS і прибирає частину стуттеру.");
+            ru.Add("Стоит одна планка — CS2 очень чувствителен к памяти. Вторая одинаковая планка (двухканал) даёт +20–40% FPS и убирает часть статтера. Самый крупный апгрейд за копейки.");
+            uk.Add("Стоїть одна планка — CS2 дуже чутливий до пам'яті. Друга однакова планка (двоканал) дає +20–40% FPS і прибирає частину статтеру.");
             en.Add("One stick installed — CS2 is very memory-sensitive. A second identical stick (dual-channel) gives +20–40% FPS and removes some stutter. Biggest cheap upgrade.");
         }
         else if (hw.RamMixedKit)
@@ -86,8 +86,8 @@ public static class BottleneckAnalyzer
         if (hw.Cs2OnSsd == false)
             findings.Add(new Finding(BiosTipLevel.Warning,
                 new L10n("CS2 на жёстком диске (HDD)", "CS2 на жорсткому диску (HDD)", "CS2 on a hard drive (HDD)"),
-                new L10n("Игра стоит на HDD — это добавляет 50–200 мс к загрузке шейдеров и усиливает стуттер. Перенос на любой SSD (даже SATA) — огромный скачок плавности.",
-                         "Гра на HDD — це додає 50–200 мс до завантаження шейдерів і посилює стуттер. Перенесення на будь-який SSD — величезний стрибок плавності.",
+                new L10n("Игра стоит на HDD — это добавляет 50–200 мс к загрузке шейдеров и усиливает статтер. Перенос на любой SSD (даже SATA) — огромный скачок плавности.",
+                         "Гра на HDD — це додає 50–200 мс до завантаження шейдерів і посилює статтер. Перенесення на будь-який SSD — величезний стрибок плавності.",
                          "The game is on an HDD — adds 50–200 ms to shader loads and worsens stutter. Moving to any SSD (even SATA) is a huge smoothness jump.")));
 
         // ---- GPU ----
@@ -146,8 +146,8 @@ public static class BottleneckAnalyzer
                      "Memory-bound. Dual-channel + XMP + our memory tweaks are the priority.")),
         Bottleneck.Storage => (
             new L10n("Узкое место: накопитель", "Вузьке місце: накопичувач", "Bottleneck: storage"),
-            new L10n("Медленный диск даёт стуттер загрузки. Перенеси CS2 на SSD.",
-                     "Повільний диск дає стуттер завантаження. Перенеси CS2 на SSD.",
+            new L10n("Медленный диск даёт статтер загрузки. Перенеси CS2 на SSD.",
+                     "Повільний диск дає статтер завантаження. Перенеси CS2 на SSD.",
                      "Slow disk causes load stutter. Move CS2 to an SSD.")),
         Bottleneck.Balanced => (
             new L10n("Система сбалансирована", "Система збалансована", "System is balanced"),

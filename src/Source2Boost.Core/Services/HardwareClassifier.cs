@@ -134,8 +134,8 @@ public static class HardwareClassifier
                 "Мощности хватает — но Source 2 упирается в один поток. Лечим не силой, а сглаживанием: точный таймер, отключение MPO, приоритет, чистка standby-памяти, low-latency.",
                 "Потужності вистачає — але Source 2 впирається в один потік. Лікуємо не силою, а згладжуванням: точний таймер, вимкнення MPO, пріоритет, чистка standby-пам'яті, low-latency.",
                 "You have the horsepower — but Source 2 is single-thread bound. We fix it with smoothing, not brute force: precise timer, MPO off, priority, standby-memory cleanup, low-latency."),
-            new L10n("Анти-стуттер набор: таймер, MPO, standby-память, low-latency.",
-                     "Анти-стуттер набір: таймер, MPO, standby-пам'ять, low-latency.",
+            new L10n("Анти-статтер набор: таймер, MPO, standby-память, low-latency.",
+                     "Анти-статтер набір: таймер, MPO, standby-пам'ять, low-latency.",
                      "Anti-stutter set: timer, MPO, standby memory, low-latency."));
     }
 

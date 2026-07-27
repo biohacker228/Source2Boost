@@ -953,9 +953,14 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         if (TxtMonBaseline is null) return;
         var b = LoadBaseline();
-        TxtMonBaseline.Text = b is null
-            ? Loc.T("monitor.baseline.none")
-            : string.Format(Loc.T("monitor.baseline.cur"), b.AvgFps, b.Low1Fps, b.MaxStutterMs, b.StdDevMs);
+        if (b is null) { TxtMonBaseline.Text = Loc.T("monitor.baseline.none"); return; }
+        // Показываем только метрики, которые реально есть в замере. Замер карты-бенчмарка даёт лишь
+        // FPS + 1% low, остальное = 0 — эти строки не выводим, чтобы не висело «статтер 0 · ровность 0».
+        var parts = new List<string> { $"FPS {b.AvgFps}", $"1% low {b.Low1Fps}" };
+        if (b.Low01Fps > 0) parts.Add($"0.1% low {b.Low01Fps}");
+        if (b.MaxStutterMs > 0) parts.Add($"статтер {b.MaxStutterMs} мс");
+        if (b.StdDevMs > 0) parts.Add($"ровность {b.StdDevMs} мс");
+        TxtMonBaseline.Text = string.Format(Loc.T("monitor.baseline.cur"), string.Join(" · ", parts));
     }
 
     /// <summary>Показать дельту свежего замера относительно эталона «до».</summary>
@@ -963,7 +968,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         var b = LoadBaseline();
         if (b is null) { CardMonDelta.Visibility = Visibility.Collapsed; return; }
-        // Для FPS и low «больше = лучше» (up=true); для стуттера и StdDev «меньше = лучше» (up=false).
+        // Для FPS и low «больше = лучше» (up=true); для статтера и StdDev «меньше = лучше» (up=false).
         // Метрику показываем только если она есть в ОБОИХ замерах (замер карты даёт лишь FPS+1% low —
         // остальное 0, эти строки пропускаем, чтобы не показывать бессмысленные нули).
         var parts = new List<string> {
@@ -971,7 +976,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             D("1% low", now.Low1Fps - b.Low1Fps, up: true),
         };
         if (now.Low01Fps > 0 && b.Low01Fps > 0) parts.Add(D("0.1% low", now.Low01Fps - b.Low01Fps, up: true));
-        if (now.MaxStutterMs > 0 && b.MaxStutterMs > 0) parts.Add(D("стуттер", now.MaxStutterMs - b.MaxStutterMs, up: false, unit: " мс"));
+        if (now.MaxStutterMs > 0 && b.MaxStutterMs > 0) parts.Add(D("статтер", now.MaxStutterMs - b.MaxStutterMs, up: false, unit: " мс"));
         if (now.StdDevMs > 0 && b.StdDevMs > 0) parts.Add(D("ровность", now.StdDevMs - b.StdDevMs, up: false, unit: " мс"));
         TxtMonDelta.Text = string.Join("   ", parts);
         CardMonDelta.Visibility = Visibility.Visible;

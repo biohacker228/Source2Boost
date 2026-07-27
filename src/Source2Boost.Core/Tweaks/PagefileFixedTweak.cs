@@ -30,7 +30,7 @@ public sealed class PagefileFixedTweak : ITweak
         "Задає pagefile фіксованого розміру (8 ГБ, min=max) на системному диску й вимикає авто-керування. На слабкому ПК Windows на ходу змінює розмір підкачки під навантаженням — це дає мікрофризи; фіксований розмір їх прибирає. Найкраще на SSD. Оборотно, потрібне перезавантаження.",
         "Sets a fixed-size page file (8 GB, min=max) on the system drive and disables auto-management. On a weak PC Windows resizes the page file on the fly under load, causing micro-stutter; a fixed size removes it. Best on an SSD. Reversible, needs a reboot.");
     public L10n Impact { get; } = new(
-        "-стуттер подкачки", "-стуттер підкачки", "-paging stutter");
+        "-статтер подкачки", "-статтер підкачки", "-paging stutter");
 
     // Актуально только для машин с малым объёмом памяти (≤ 8 ГБ). На 16+ ГБ подкачка почти не задействуется.
     public bool IsSupported(TweakContext ctx) => ctx.Hardware.RamGb is > 0 and <= 8;
