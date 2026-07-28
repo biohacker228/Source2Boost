@@ -551,6 +551,9 @@ public static class TweakCatalog
                     return k?.GetValue("NtfsDisableLastAccessUpdate") is int v && (v & 1) == 1;
                 })),
 
+            // Убрать CS2 с ядра 0 (народный приём «снять галочку с ЦП0»). Часто плацебо — под замер.
+            new Cs2NoCore0Tweak(),
+
             // Активное удержание точного таймера 0.5 мс (пока работает приложение).
             new TimerResHoldTweak(),
 

@@ -187,6 +187,29 @@ public static class Cs2Benchmark
         catch { return null; }
     }
 
+    /// <summary>Разобрать ВСЕ строки итога «[VProf] FPS: Avg=…, P1=…» из console.log по порядку.
+    /// Нужно для непрерывного слежения: по росту количества понимаем, что пришёл НОВЫЙ замер
+    /// (пользователь применил твик и снова запустил карту, не закрывая игру).</summary>
+    public static IReadOnlyList<(double avg, double p1)> ParseVProfResults()
+    {
+        var path = ConsoleLogPath();
+        if (path is null || !File.Exists(path)) return Array.Empty<(double, double)>();
+        try
+        {
+            string text;
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs))
+                text = sr.ReadToEnd();
+            var ms = Regex.Matches(text, @"\[VProf\]\s*FPS:\s*Avg=([\d.]+),\s*P1=([\d.]+)", RegexOptions.IgnoreCase);
+            var list = new List<(double, double)>(ms.Count);
+            foreach (Match m in ms)
+                list.Add((double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture),
+                          double.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture)));
+            return list;
+        }
+        catch { return Array.Empty<(double, double)>(); }
+    }
+
     /// <summary>Очистить console.log перед прогоном (чтобы не поймать старый VProf-итог). Best-effort.</summary>
     public static void ClearConsoleLog()
     {

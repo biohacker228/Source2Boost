@@ -226,6 +226,13 @@ public static class Loc
                                      "Еталонну демку не знайдено. Запиши її ОДИН раз: зайди в дефматч на de_dust2, у консолі набери record s2b_bench, пограй ~60 с активно (рух, стрільба, смоки), потім stop. Файл s2b_bench.dem поклади в папку replays (відкрию її зараз). Після цього «Авто-замір» проганятиме саме цю сцену щоразу. Відкрити папку replays?",
                                      "No reference demo found. Record it ONCE: join a deathmatch on de_dust2, type record s2b_bench in console, play ~60s actively (move, shoot, smokes), then stop. Put s2b_bench.dem into the replays folder (I'll open it now). After that, Auto-benchmark replays exactly that scene every time. Open the replays folder?"),
         ["monitor.auto.launching"] = new("Запускаю CS2…", "Запускаю CS2…", "Launching CS2…"),
+        ["monitor.auto.watching"] = new("Поймано замеров: {0}. Можно применить твик и снова запустить карту — НЕ закрывая игру, подхвачу новый итог сам.",
+                                        "Спіймано замірів: {0}. Можна застосувати твік і знову запустити карту — НЕ закриваючи гру, підхоплю новий підсумок сам.",
+                                        "Runs captured: {0}. Apply a tweak and run the map again — no need to close the game, I'll catch the new result."),
+        ["monitor.auto.stop"] = new("Остановить слежение", "Зупинити стеження", "Stop watching"),
+        ["monitor.auto.run"] = new("замер #{0}", "замір #{0}", "run #{0}"),
+        ["monitor.graph.title"] = new("Фреймтайм последнего прогона (PresentMon)", "Фреймтайм останнього прогону (PresentMon)", "Frametime of last run (PresentMon)"),
+        ["monitor.graph.cap"] = new("Ниже и ровнее — лучше. Пики вверх — микрофризы.", "Нижче й рівніше — краще. Піки вгору — мікрофризи.", "Lower and flatter is better. Upward spikes are micro-stutters."),
         ["monitor.auto.launchfail"] = new("Не удалось запустить CS2. Запусти игру вручную (с параметром запуска -condebug) и попробуй снова.", "Не вдалося запустити CS2. Запусти гру вручну (з параметром -condebug) та спробуй знову.", "Couldn't launch CS2. Start the game manually (with the -condebug launch option) and try again."),
 
         ["cs2.sub"]         = new("Параметры запуска Steam и autoexec.cfg для максимума FPS.", "Параметри запуску Steam та autoexec.cfg для максимуму FPS.", "Steam launch options and autoexec.cfg for max FPS."),

@@ -110,6 +110,76 @@ public static class PresentMonService
         catch (Exception ex) { Logger.Error("capture: exception", ex); return (null, null, ex.Message); }
     }
 
+    /// <summary>Запустить НЕПРЕРЫВНЫЙ захват cs2.exe (без --timed) — для графика фреймтайма и реальных
+    /// метрик статтера/StdDev/0.1% low, которых карта-бенчмарк не даёт. Возвращает (процесс, путь CSV)
+    /// или (null,null), если PresentMon/cs2 не найдены. Процесс нужно убить по завершении слежения.</summary>
+    public static (Process? proc, string? csv) StartContinuousCapture(string label = "bench")
+    {
+        var exe = FindExe();
+        if (exe is null) { Logger.Warn("capture(cont): PresentMon.exe not found"); return (null, null); }
+        if (!IsCs2Running()) { Logger.Info("capture(cont): cs2.exe not running"); return (null, null); }
+        var csv = Path.Combine(CapturesDir(), $"{label}_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        var psi = new ProcessStartInfo(exe)
+        {
+            CreateNoWindow = true, UseShellExecute = false,
+            RedirectStandardOutput = true, RedirectStandardError = true,
+        };
+        foreach (var a in new[]
+        {
+            "--process_name", "cs2.exe", "--output_file", csv,
+            "--stop_existing_session", "--v1_metrics", "--no_console_stats",
+        }) psi.ArgumentList.Add(a);
+        try
+        {
+            var p = Process.Start(psi);
+            if (p is null) return (null, null);
+            _ = p.StandardOutput.ReadToEndAsync();   // сливаем буферы, чтобы не забились
+            _ = p.StandardError.ReadToEndAsync();
+            Logger.Info($"capture(cont): started -> {csv}");
+            return (p, csv);
+        }
+        catch (Exception ex) { Logger.Warn($"capture(cont): start failed: {ex.Message}"); return (null, null); }
+    }
+
+    /// <summary>Прочитать последние lastN кадров (msBetweenPresents) из CSV для графика + статистику по
+    /// этому окну. Файл читаем с общим доступом — PresentMon держит его открытым на запись.</summary>
+    public static (FrametimeStats? stats, double[] series) ParseRecent(string csvPath, int lastN = 1500)
+    {
+        try
+        {
+            string all;
+            using (var fs = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs)) all = sr.ReadToEnd();
+            var lines = all.Split('\n');
+            if (lines.Length < 3) return (null, Array.Empty<double>());
+            var header = lines[0].Split(',');
+            int col = Array.FindIndex(header, h => h.Trim().Equals("msBetweenPresents", StringComparison.OrdinalIgnoreCase));
+            if (col < 0) col = Array.FindIndex(header, h => h.Trim().IndexOf("msBetweenPresents", StringComparison.OrdinalIgnoreCase) >= 0);
+            if (col < 0) return (null, Array.Empty<double>());
+
+            var ft = new List<double>();
+            for (int i = 1; i < lines.Length; i++)
+            {
+                var parts = lines[i].Split(',');
+                if (col >= parts.Length) continue;
+                if (double.TryParse(parts[col], NumberStyles.Float, CultureInfo.InvariantCulture, out var v) && v > 0)
+                    ft.Add(v);
+            }
+            if (ft.Count < 10) return (null, Array.Empty<double>());
+            if (ft.Count > lastN) ft = ft.GetRange(ft.Count - lastN, lastN);
+
+            var sorted = ft.OrderBy(x => x).ToList();
+            int n = sorted.Count;
+            double sum = 0; foreach (var v in ft) sum += v; double mean = sum / n;
+            double sq = 0; foreach (var v in ft) sq += (v - mean) * (v - mean); double sd = Math.Sqrt(sq / n);
+            double Pct(double p) => sorted[Math.Min(n - 1, (int)Math.Floor(p / 100.0 * n))];
+            var stats = new FrametimeStats(n, Math.Round(1000.0 / mean, 1), Math.Round(1000.0 / Pct(99), 1),
+                Math.Round(1000.0 / Pct(99.9), 1), Math.Round(sorted[^1], 1), Math.Round(sd, 2));
+            return (stats, ft.ToArray());
+        }
+        catch { return (null, Array.Empty<double>()); }
+    }
+
     /// <summary>Разбор CSV PresentMon (v1_metrics: колонка msBetweenPresents) в статистику.</summary>
     public static FrametimeStats? Parse(string csvPath)
     {

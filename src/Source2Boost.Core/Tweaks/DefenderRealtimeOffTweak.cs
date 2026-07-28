@@ -39,7 +39,7 @@ public sealed class DefenderRealtimeOffTweak : ITweak
             ctx.Trace($"applied {Id}: {outp.Trim()}");
             return IsApplied(ctx)
                 ? TweakResult.Ok()
-                : TweakResult.Fail("Не удалось — вероятно включена Tamper Protection. Выключи её вручную и повтори.");
+                : TweakResult.Fail("Не удалось: включена Tamper Protection (Защита от подделки) — она сама откатит отключение Defender. Надёжнее и безопаснее используй твик «Исключение cs2.exe в Defender» — он не требует отключать Tamper Protection и не снимает защиту с системы.");
         }
         catch (Exception ex) { return TweakResult.Fail(ex.Message); }
     }

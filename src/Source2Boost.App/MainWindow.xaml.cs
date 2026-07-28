@@ -290,6 +290,9 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     /// <summary>Последний замер (для вердикта узкого места по GPU-busy).</summary>
     private FrametimeStats? _lastStats;
 
+    /// <summary>Активное непрерывное слежение авто-замера (второй клик по кнопке = остановить).</summary>
+    private System.Threading.CancellationTokenSource? _benchCts;
+
     // ---------- Первый запуск: скан + отчёт ----------
     private async void WelcomeScan_Click(object sender, RoutedEventArgs e)
     {
@@ -446,7 +449,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     private void EnsureWatcher()
     {
         bool affinity = Ctx().Backup.LoadState(Cs2AffinityTweak.StateKey) == "1";
-        bool on = AutoGameToggle?.IsChecked == true || affinity;
+        bool noCore0 = Ctx().Backup.LoadState(Cs2NoCore0Tweak.StateKey) == "1";
+        bool on = AutoGameToggle?.IsChecked == true || affinity || noCore0;
         if (on && _cs2Watch is null)
         {
             _cs2WasRunning = PresentMonService.IsCs2Running();
@@ -492,9 +496,12 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         }
 
         // Аффинити переприменяем КАЖДЫЙ тик, пока CS2 живёт: движок иногда сбрасывает маску.
-        if (running && Ctx().Backup.LoadState(Cs2AffinityTweak.StateKey) == "1")
+        // Общая маска учитывает оба твика сразу (топология + «без ЦП0»), чтобы не конфликтовали.
+        bool topo = Ctx().Backup.LoadState(Cs2AffinityTweak.StateKey) == "1";
+        bool noCore0 = Ctx().Backup.LoadState(Cs2NoCore0Tweak.StateKey) == "1";
+        if (running && (topo || noCore0))
         {
-            var mask = CpuTopology.Detect(_hw).RecommendedMask;
+            var mask = Cs2Affinity.DesiredMask(_hw, topo, noCore0);
             if (mask != 0) await Task.Run(() => Cs2Affinity.Apply(mask));
         }
     }
@@ -876,6 +883,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     /// Мы ловим итог ЛЮБОЙ карты из консоли (строка [VProf] FPS: Avg=..., P1=...) и показываем A/B.</summary>
     private async void AutoBench_Click(object sender, RoutedEventArgs e)
     {
+        // Второй клик во время слежения = остановить.
+        if (_benchCts is not null) { _benchCts.Cancel(); return; }
         if (_busy) return;
 
         // CS2 должен быть закрыт — мы запускаем его сами с -condebug (иначе console.log не пишется).
@@ -893,47 +902,106 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         }
 
         _busy = true;
-        BtnAutoBench.IsEnabled = false;
+        var origBtn = TxtAutoBench.Text;
         // Ждём старт процесса CS2.
         for (int i = 0; i < 90 && !PresentMonService.IsCs2Running(); i++)
         {
             TxtMonResult.Text = Loc.T("monitor.auto.launching");
             await Task.Delay(1000);
         }
-
-        // Пользователь запускает карту-бенчмарк в Мастерской; карта сама печатает итог
-        // «[VProf] FPS: Avg=…, P1=…» в конце прогона. Опрашиваем console.log, пока строка не появится.
-        // Таймаут ~10 мин (навигация в меню + прогон).
-        (double avg, double p1)? res = null;
-        for (int i = 0; i < 200 && res is null; i++)
+        if (!PresentMonService.IsCs2Running())
         {
-            TxtMonResult.Text = string.Format(Loc.T("monitor.auto.waiting"), i * 3);
-            await Task.Delay(3000);
-            res = Core.Cs2Benchmark.ParseVProfResult();
-        }
-        // Итог найден — подождём ещё чуть и перечитаем: возьмём ПОСЛЕДНЮЮ строку (если их несколько).
-        if (res is not null) { await Task.Delay(3000); res = Core.Cs2Benchmark.ParseVProfResult() ?? res; }
-
-        _busy = false; BtnAutoBench.IsEnabled = true;
-
-        if (res is not { } r)
-        {
+            _busy = false;
             TxtMonResult.Text = "⚠ " + Loc.T("monitor.auto.timeout");
             return;
         }
 
-        // Данные карты: средний FPS + 1% low. Кладём в FrametimeStats (остальное неизвестно = 0),
-        // чтобы работали общая база «до/после» и рекомендация капа по 1% low.
-        var stats = new FrametimeStats(0, Math.Round(r.avg, 1), Math.Round(r.p1, 1), 0, 0, 0);
-        _lastStats = stats;
-        TxtMonResult.Text = string.Format(Loc.T("monitor.auto.result"), stats.AvgFps, stats.Low1Fps);
-        BtnSetBaseline.IsEnabled = true;
-        ShowDeltaVsBaseline(stats);
-        Ctx().Backup.SaveState("last-avg-fps", stats.AvgFps.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        Ctx().Backup.SaveState("last-low1-fps", stats.Low1Fps.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        RefreshCs2();
-        _ = RefreshForecast();
-        BuildDashboard();
+        // Непрерывный захват PresentMon (best-effort): график фреймтайма + реальные статтер/StdDev/0.1%,
+        // которых карта-бенчмарк не отдаёт. Если PresentMon недоступен — просто без графика.
+        var (pmProc, pmCsv) = PresentMonService.StartContinuousCapture();
+        _benchCts = new System.Threading.CancellationTokenSource();
+        var tok = _benchCts.Token;
+        TxtAutoBench.Text = Loc.T("monitor.auto.stop");   // кнопка становится «Остановить слежение»
+
+        int seen = 0;
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        try
+        {
+            // НЕПРЕРЫВНОЕ слежение: ловим КАЖДЫЙ новый итог карты, пока CS2 открыта (и не дольше 40 мин).
+            // Пользователь может применить твик и снова запустить карту, НЕ закрывая игру — подхватим.
+            while (!tok.IsCancellationRequested && PresentMonService.IsCs2Running()
+                   && sw.Elapsed < TimeSpan.FromMinutes(40))
+            {
+                var results = Core.Cs2Benchmark.ParseVProfResults();
+                if (results.Count > seen)
+                {
+                    var r = results[^1];
+                    seen = results.Count;
+
+                    FrametimeStats? pm = null; double[] series = Array.Empty<double>();
+                    if (pmCsv is not null) { var pr = PresentMonService.ParseRecent(pmCsv); pm = pr.stats; series = pr.series; }
+
+                    // Заголовочные Avg/P1 — из карты (детерминированный бенчмарк). Статтер/StdDev/0.1%
+                    // low — из PresentMon (карта их не даёт). Без PresentMon они = 0 (как раньше).
+                    var stats = new FrametimeStats(
+                        pm?.Frames ?? 0, Math.Round(r.avg, 1), Math.Round(r.p1, 1),
+                        pm?.Low01Fps ?? 0, pm?.MaxStutterMs ?? 0, pm?.StdDevMs ?? 0);
+                    _lastStats = stats;
+
+                    TxtMonResult.Text = string.Format(Loc.T("monitor.auto.result"), stats.AvgFps, stats.Low1Fps)
+                        + (seen > 1 ? "   ·  " + string.Format(Loc.T("monitor.auto.run"), seen) : "");
+                    BtnSetBaseline.IsEnabled = true;
+                    ShowDeltaVsBaseline(stats);
+                    DrawFrametime(series);
+                    Ctx().Backup.SaveState("last-avg-fps", stats.AvgFps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    Ctx().Backup.SaveState("last-low1-fps", stats.Low1Fps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    _ = RefreshForecast();
+                    BuildDashboard();
+                }
+                else
+                {
+                    TxtMonResult.Text = seen == 0
+                        ? string.Format(Loc.T("monitor.auto.waiting"), (int)sw.Elapsed.TotalSeconds)
+                        : string.Format(Loc.T("monitor.auto.watching"), seen);
+                }
+                try { await Task.Delay(2500, tok); } catch (TaskCanceledException) { }
+            }
+            if (seen == 0 && !tok.IsCancellationRequested)
+                TxtMonResult.Text = "⚠ " + Loc.T("monitor.auto.timeout");
+        }
+        finally
+        {
+            try { if (pmProc is { HasExited: false }) pmProc.Kill(true); } catch { }
+            pmProc?.Dispose();
+            _benchCts.Dispose(); _benchCts = null;
+            _busy = false;
+            TxtAutoBench.Text = origBtn;
+            RefreshCs2();
+        }
+    }
+
+    /// <summary>Нарисовать фреймтайм последнего прогона (ряд мс между кадрами) в графике монитора.
+    /// Шкала 0..20 мс: ровная линия внизу = плавно, пики вверх = микрофризы.</summary>
+    private void DrawFrametime(double[] series)
+    {
+        if (GraphLine is null || GraphFill is null || CardMonGraph is null) return;
+        if (series is null || series.Length < 2) { CardMonGraph.Visibility = Visibility.Collapsed; return; }
+        const double W = 600, H = 120, maxMs = 20.0;
+        int n = series.Length;
+        var line = new System.Windows.Media.PointCollection(n);
+        var fill = new System.Windows.Media.PointCollection(n + 2) { new System.Windows.Point(0, H) };
+        for (int i = 0; i < n; i++)
+        {
+            double x = W * i / (n - 1);
+            double ms = Math.Min(series[i], maxMs);
+            double y = H * (1 - ms / maxMs);   // высокий фреймтайм (плохо) = пик вверх
+            line.Add(new System.Windows.Point(x, y));
+            fill.Add(new System.Windows.Point(x, y));
+        }
+        fill.Add(new System.Windows.Point(W, H));
+        GraphLine.Points = line;
+        GraphFill.Points = fill;
+        CardMonGraph.Visibility = Visibility.Visible;
     }
 
     // ---------- A/B: база «до» и дельта «после» ----------
@@ -1123,6 +1191,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtAutoBenchHint.Text = Loc.T("monitor.auto.hint");
         LblBenchMap.Text = Loc.T("monitor.benchmap.label");
         BtnSubscribeMap.Content = Loc.T("monitor.subscribe");
+        TxtMonGraphTitle.Text = Loc.T("monitor.graph.title");
+        TxtMonGraphCap.Text = Loc.T("monitor.graph.cap");
         TxtMonDeltaTitle.Text = Loc.T("monitor.delta.title");
         RefreshBaselineLabel();
         TxtNavBios.Text = Loc.T("nav.bios");

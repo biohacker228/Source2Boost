@@ -31,6 +31,21 @@ public static class Cs2Affinity
         return Apply(all);
     }
 
+    /// <summary>Желаемая маска cs2 с учётом ОБОИХ твиков сразу, чтобы они не конфликтовали:
+    /// «правильные ядра» (топология) и «без ЦП0» (увести игру с ядра системных прерываний/DPC).
+    /// База = маска топологии (если включена) либо все ядра; «без ЦП0» гасит бит 0. Если оба
+    /// выключены — 0 (аффинити не управляем). Пустую маску не отдаём (страховка → все ядра).</summary>
+    public static ulong DesiredMask(HardwareInfo? hw, bool topology, bool noCore0)
+    {
+        if (!topology && !noCore0) return 0;
+        int n = Environment.ProcessorCount;
+        ulong all = n >= 64 ? ulong.MaxValue : (1UL << n) - 1;
+        ulong baseMask = topology ? CpuTopology.Detect(hw).RecommendedMask : all;
+        if (baseMask == 0) baseMask = all;
+        if (noCore0) baseMask &= ~1UL;
+        return baseMask == 0 ? all : baseMask;
+    }
+
     private static Process[] SafeGet(string name)
     {
         try { return Process.GetProcessesByName(name); }
