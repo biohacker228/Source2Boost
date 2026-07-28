@@ -27,16 +27,18 @@ public sealed class RegistryTweak : ITweak
     private readonly string _subKey;
     private readonly IReadOnlyList<RegEntry> _entries;
     private readonly Func<TweakContext, bool>? _supported;
+    private readonly Func<TweakContext, bool>? _isApplied;
 
     public RegistryTweak(string id, TweakCategory category, RiskLevel risk,
         L10n title, L10n description, L10n impact,
         RegistryHive hive, string subKey, IReadOnlyList<RegEntry> entries,
-        bool requiresRestart = false, Func<TweakContext, bool>? supported = null)
+        bool requiresRestart = false, Func<TweakContext, bool>? supported = null,
+        Func<TweakContext, bool>? isApplied = null)
     {
         Id = id; Category = category; Risk = risk;
         Title = title; Description = description; Impact = impact;
         _hive = hive; _subKey = subKey; _entries = entries;
-        RequiresRestart = requiresRestart; _supported = supported;
+        RequiresRestart = requiresRestart; _supported = supported; _isApplied = isApplied;
     }
 
     private RegistryKey Root => RegistryKey.OpenBaseKey(_hive, RegistryView.Registry64);
@@ -46,6 +48,7 @@ public sealed class RegistryTweak : ITweak
 
     public bool IsApplied(TweakContext ctx)
     {
+        if (_isApplied is not null) return _isApplied(ctx);   // кастомная семантика детекта
         using var root = Root;
         using var k = root.OpenSubKey(_subKey);
         if (k is null) return false;

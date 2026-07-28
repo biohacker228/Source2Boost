@@ -87,6 +87,7 @@ public static class Loc
         ["boostmode.off"]   = new("Фон разбужен ({0} прил.). Всё вернулось к обычному режиму.", "Фон розбуджено ({0} дод.). Усе повернулось.", "Background resumed ({0} apps). Back to normal."),
         ["boostmode.none"]  = new("Подходящих фоновых приложений не найдено — усыплять нечего.", "Відповідних фонових додатків не знайдено.", "No matching background apps found — nothing to suspend."),
         ["boostmode.active"] = new("Режим активен: фон усыплён. Выключи, чтобы разбудить.", "Режим активний: фон приспано. Вимкни, щоб розбудити.", "Active: background suspended. Turn off to resume."),
+        ["boostmode.auto"] = new("Управляется авто-режимом: включится сам при запуске CS2. Вручную жать не нужно.", "Керується авто-режимом: увімкнеться сам при запуску CS2. Вручну тиснути не потрібно.", "Handled by auto mode: turns on by itself when CS2 launches. No need to toggle manually."),
 
         ["nav.settings"]     = new("Настройки", "Налаштування", "Settings"),
         ["settings.title"]   = new("Настройки", "Налаштування", "Settings"),

@@ -58,16 +58,20 @@ public sealed class NagleTweak : ITweak
             targets = ifaces.GetSubKeyNames();
         }
 
-        bool anyChecked = false;
+        // Применённым считаем твик, если он ЦЕЛ хотя бы на одном из сохранённых интерфейсов.
+        // Раньше требовали значение=1 на КАЖДОМ — но Windows/драйвер NIC может сбросить значение
+        // на одном адаптере (реконнект, DHCP-renew, обновление драйвера), и это ложно гасило весь
+        // твик (тумблер сам выключался). Теперь один сброшенный адаптер не «роняет» состояние.
         foreach (var g in targets)
         {
             using var k = ifaces.OpenSubKey(g);
-            if (k is null) continue;   // интерфейс исчез — не считаем это провалом
-            anyChecked = true;
+            if (k is null) continue;   // интерфейс исчез — пропускаем
+            bool ok = true;
             foreach (var n in Names)
-                if (k.GetValue(n) is not int v || v != 1) return false;
+                if (k.GetValue(n) is not int v || v != 1) { ok = false; break; }
+            if (ok) return true;
         }
-        return anyChecked;
+        return false;
     }
 
     public TweakResult Apply(TweakContext ctx)

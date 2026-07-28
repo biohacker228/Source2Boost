@@ -352,11 +352,19 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     private void RefreshBoostMode()
     {
         if (BoostToggle is null) return;
-        BoostToggle.IsChecked = GameBoostService.IsBoosted;
+        // Если включён авто-режим (фокус применяется сам при старте CS2) — показываем ползунок
+        // ВКЛючённым, чтобы у пользователя не было желания жать его вручную каждый раз.
+        bool autoGame = Ctx().Backup.LoadState("auto-game") == "1";
+        BoostToggle.IsChecked = GameBoostService.IsBoosted || autoGame;
         if (GameBoostService.IsBoosted)
         {
             TxtBoostModeStatus.Visibility = Visibility.Visible;
             TxtBoostModeStatus.Text = Loc.T("boostmode.active");
+        }
+        else if (autoGame)
+        {
+            TxtBoostModeStatus.Visibility = Visibility.Visible;
+            TxtBoostModeStatus.Text = Loc.T("boostmode.auto");
         }
         RefreshAutomation();
     }
@@ -430,6 +438,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         Ctx().Backup.SaveState("auto-game", AutoGameToggle.IsChecked == true ? "1" : "0");
         EnsureWatcher();
+        RefreshBoostMode();   // ползунок игрового фокуса должен сразу отразить авто-режим
     }
 
     /// <summary>Сторож CS2 нужен, если включён Авто-режим ИЛИ твик аффинити CS2 (его надо

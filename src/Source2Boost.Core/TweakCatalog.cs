@@ -539,7 +539,17 @@ public static class TweakCatalog
                          "NTFS stops updating the 'last access' timestamp on reads — fewer needless background disk writes. Safe and reversible. On recent Windows this is often already the default (then no effect). Measure if you get disk-related micro-stutter."),
                 new L10n("?меньше записей на диск", "?менше записів на диск", "?fewer disk writes"),
                 RegistryHive.LocalMachine, @"SYSTEM\CurrentControlSet\Control\FileSystem",
-                new[] { new RegEntry("NtfsDisableLastAccessUpdate", RegistryValueKind.DWord, 1) })),
+                new[] { new RegEntry("NtfsDisableLastAccessUpdate", RegistryValueKind.DWord, 1) },
+                // На новой Windows значение живёт как System-Managed (0x8000000X), и точная сверка
+                // ==1 ложно гасила тумблер. Считаем применённым, если last-access ВЫКЛючен в ЛЮБОМ
+                // режиме: младший бит = 1 (0x1 «User Managed, Disabled» или 0x80000001 «System Managed,
+                // Disabled»). Так твик больше не «слетает», когда ОС нормализует значение.
+                isApplied: _ =>
+                {
+                    using var k = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64)
+                        .OpenSubKey(@"SYSTEM\CurrentControlSet\Control\FileSystem");
+                    return k?.GetValue("NtfsDisableLastAccessUpdate") is int v && (v & 1) == 1;
+                })),
 
             // Активное удержание точного таймера 0.5 мс (пока работает приложение).
             new TimerResHoldTweak(),
