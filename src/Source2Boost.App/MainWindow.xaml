@@ -487,6 +487,13 @@
                         <TextBlock x:Name="TxtTweaksTitle" Text="Твики вручную" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
                         <TextBlock x:Name="TxtTweaksSub" Text="Включай по одному. У каждого — риск и ожидаемый эффект." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16" />
                         <ItemsControl x:Name="TweaksList" ItemsSource="{Binding Tweaks}" ItemTemplate="{StaticResource TweakRowTemplate}" />
+                        <Border x:Name="CardTweaksUpsell" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="11" Padding="14,11" Margin="0,6,0,0" Visibility="Collapsed">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <TextBlock x:Name="TxtTweaksUpsell" Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" />
+                                <ui:Button x:Name="BtnTweaksUpsell" Grid.Column="1" Content="Открыть Pro" Click="GoPro_Click" VerticalAlignment="Center" Cursor="Hand" Padding="12,7" Margin="10,0,0,0" />
+                            </Grid>
+                        </Border>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                             <Button x:Name="BtnApplySelected" Click="ApplySelected_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
                                 <Button.Template>
@@ -508,7 +515,7 @@
                         <TextBlock x:Name="TxtLabSub" TextWrapping="Wrap" Text="Экспериментальные твики: работают и полностью обратимы, но польза НЕ доказана. Не входят в профили и в оценку. Включи один → перезагрузка → прогони «Авто-замер» в разделе «Тест и прогноз» до/после. Оставляй только то, что реально помогло." FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,14" />
 
                         <!-- CTA к бенчмарку -->
-                        <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,0,14">
+                        <Border x:Name="CardLabBenchCta" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,0,14">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -524,6 +531,12 @@
 
                         <ItemsControl x:Name="LabList" ItemsSource="{Binding LabTweaks}" ItemTemplate="{StaticResource TweakRowTemplate}" />
                         <TextBlock x:Name="TxtLabEmpty" Text="Под ваше железо пока нет экспериментальных твиков." FontSize="12.5" Foreground="{DynamicResource Muted}" Margin="2,4,0,0" Visibility="Collapsed" />
+                        <Border x:Name="CardLabUpsell" Background="{DynamicResource AccentSoft}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="12" Padding="16,14" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="TxtLabUpsell" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Text}" />
+                                <ui:Button x:Name="BtnLabUpsell" Content="Открыть Pro" Click="GoPro_Click" HorizontalAlignment="Left" Cursor="Hand" Padding="14,8" Margin="0,12,0,0" />
+                            </StackPanel>
+                        </Border>
 
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                             <Button x:Name="BtnApplyLab" Click="ApplyLab_Click" Cursor="Hand" BorderThickness="0" Padding="18,10" Foreground="White" FontSize="13.5" FontWeight="SemiBold">
@@ -867,6 +880,27 @@
                         <TextBlock x:Name="TxtSettingsTitle" Text="Настройки" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource Text}" />
                         <TextBlock x:Name="TxtSettingsSub" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource Muted}" Margin="0,2,0,16"
                                    Text="Автоматизация: пусть Source2Boost сам держит оптимизацию и включает игровой режим при старте CS2." />
+
+                        <!-- Pro / промокод -->
+                        <Border x:Name="CardPro" Background="{DynamicResource Card}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" CornerRadius="12" Padding="16,14" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="TxtProTierLabel" Text="Тариф:" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Text}" VerticalAlignment="Center" />
+                                    <Border x:Name="ChipTier" CornerRadius="20" Padding="10,3" Margin="8,0,0,0" Background="{DynamicResource AccentSoft}" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtProTier" Text="Free" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource Accent}" />
+                                    </Border>
+                                    <TextBlock x:Name="TxtProTrial" FontSize="12" Foreground="{DynamicResource Text2}" Margin="10,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtProPromoHint" TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource Text2}" Margin="0,10,0,8"
+                                           Text="Есть промокод? Введи его, чтобы открыть Pro навсегда. Покупка — скоро." />
+                                <StackPanel x:Name="RowPromo" Orientation="Horizontal">
+                                    <TextBox x:Name="TxtPromo" Width="220" FontFamily="Consolas" FontSize="13" Padding="8,6" VerticalAlignment="Center" />
+                                    <ui:Button x:Name="BtnPromo" Content="Активировать" Appearance="Primary" Click="ActivatePromo_Click" Margin="8,0,0,0" Padding="14,7" Cursor="Hand" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtProResult" FontSize="12.5" Foreground="{DynamicResource Good}" Margin="0,8,0,0" Visibility="Collapsed" />
+                            </StackPanel>
+                        </Border>
+
                         <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="12" Padding="16,10">
                             <StackPanel>
                                 <Grid Margin="0,3,0,0">

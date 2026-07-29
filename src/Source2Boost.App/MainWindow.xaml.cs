@@ -381,6 +381,7 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         if (AutoStartToggle is null) return;
         AutoStartToggle.IsChecked = AutoStartService.IsEnabled();
         AutoGameToggle.IsChecked = Ctx().Backup.LoadState("auto-game") == "1";
+        RefreshPro();
         EnsureWatcher();
         if (TxtUpdateVersion is not null)
             TxtUpdateVersion.Text = $"{Loc.T("update.version")} {Core.UpdateService.CurrentVersion.ToString(3)}";
@@ -437,11 +438,47 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         }
     }
 
-    private void AutoGameToggle_Click(object sender, RoutedEventArgs e)
+    private async void AutoGameToggle_Click(object sender, RoutedEventArgs e)
     {
+        // Авто-режим — функция Pro.
+        if (AutoGameToggle.IsChecked == true && !Core.LicenseService.IsPro)
+        {
+            AutoGameToggle.IsChecked = false;
+            await ShowInfoDialog(Loc.T("pro.title"), Loc.T("pro.automode"));
+            return;
+        }
         Ctx().Backup.SaveState("auto-game", AutoGameToggle.IsChecked == true ? "1" : "0");
         EnsureWatcher();
         RefreshBoostMode();   // ползунок игрового фокуса должен сразу отразить авто-режим
+    }
+
+    /// <summary>Активация Pro промокодом.</summary>
+    private void ActivatePromo_Click(object sender, RoutedEventArgs e)
+    {
+        bool ok = Core.LicenseService.TryActivate(TxtPromo.Text);
+        TxtProResult.Visibility = Visibility.Visible;
+        TxtProResult.Foreground = (System.Windows.Media.Brush)FindResource(ok ? "Good" : "Crit");
+        TxtProResult.Text = Loc.T(ok ? "pro.promo.ok" : "pro.promo.bad");
+        if (ok)
+        {
+            TxtPromo.Text = "";
+            RefreshPro();
+            BuildTweaks();       // разблокировать твики и Лабораторию
+            RefreshBoostMode();
+        }
+    }
+
+    /// <summary>Обновить блок Pro в настройках (чип тарифа, статус триала, видимость промокода).</summary>
+    private void RefreshPro()
+    {
+        if (TxtProTier is null) return;
+        bool activated = Core.LicenseService.IsActivated;
+        TxtProTier.Text = Loc.T(Core.LicenseService.IsPro ? "pro.tier.pro" : "pro.tier.free");
+        TxtProTrial.Text = activated
+            ? Loc.T("pro.active")
+            : (Core.LicenseService.TrialActive ? string.Format(Loc.T("pro.trial"), Core.LicenseService.TrialDaysLeft) : "");
+        RowPromo.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
+        TxtProPromoHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
     }
 
     /// <summary>Сторож CS2 нужен, если включён Авто-режим ИЛИ твик аффинити CS2 (его надо
@@ -508,7 +545,9 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
 
     private bool _busy;
 
-    private void Optimize_Click(object sender, RoutedEventArgs e) => _ = RunProfile(Profile.Optimal);
+    // Free — только безопасный профиль (агрессивное/оптимальное = Pro); Pro — полный «Оптимальный».
+    private void Optimize_Click(object sender, RoutedEventArgs e)
+        => _ = RunProfile(Core.LicenseService.IsPro ? Profile.Optimal : Profile.Safe);
     private void ProfSafe_Click(object sender, RoutedEventArgs e) => _ = RunProfile(Profile.Safe);
     private void ProfOptimal_Click(object sender, RoutedEventArgs e) => _ = RunProfile(Profile.Optimal);
     private void ProfMax_Click(object sender, RoutedEventArgs e) => _ = RunProfile(Profile.Maximum);
@@ -661,8 +700,17 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     // ---------- Лаборатория ----------
     private void RefreshLab()
     {
+        // Лаборатория — функция Pro. В Free показываем апселл вместо экспериментов и бенч-CTA.
+        bool pro = Core.LicenseService.IsPro;
+        if (CardLabUpsell is not null)
+        {
+            CardLabUpsell.Visibility = pro ? Visibility.Collapsed : Visibility.Visible;
+            if (!pro) TxtLabUpsell.Text = Loc.T("pro.lab.locked");
+        }
+        if (CardLabBenchCta is not null) CardLabBenchCta.Visibility = pro ? Visibility.Visible : Visibility.Collapsed;
+        if (LabList is not null) LabList.Visibility = pro ? Visibility.Visible : Visibility.Collapsed;
         if (TxtLabEmpty is not null)
-            TxtLabEmpty.Visibility = _vm.LabTweaks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            TxtLabEmpty.Visibility = (pro && _vm.LabTweaks.Count == 0) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void LabToMonitor_Click(object sender, RoutedEventArgs e) => ShowPanel("monitor");
@@ -886,6 +934,13 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         // Второй клик во время слежения = остановить.
         if (_benchCts is not null) { _benchCts.Cancel(); return; }
         if (_busy) return;
+
+        // Бенчмарк «до/после» — функция Pro.
+        if (!Core.LicenseService.IsPro)
+        {
+            await ShowInfoDialog(Loc.T("pro.title"), Loc.T("pro.benchmark"));
+            return;
+        }
 
         // CS2 должен быть закрыт — мы запускаем его сами с -condebug (иначе console.log не пишется).
         if (PresentMonService.IsCs2Running())
@@ -1146,6 +1201,10 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         TxtAutoStartDesc.Text = Loc.T("auto.start.desc");
         TxtAutoGameTitle.Text = Loc.T("auto.game.title");
         TxtAutoGameDesc.Text = Loc.T("auto.game.desc");
+        TxtProTierLabel.Text = Loc.T("pro.tier") + ":";
+        TxtProPromoHint.Text = Loc.T("pro.promo.hint");
+        BtnPromo.Content = Loc.T("pro.promo.btn");
+        RefreshPro();
         TxtUpdatesTitle.Text = Loc.T("update.title");
         TxtUpdateVersion.Text = $"{Loc.T("update.version")} {Core.UpdateService.CurrentVersion.ToString(3)}";
         TxtUpdateStatus.Text = Loc.T("update.hint");
@@ -1249,7 +1308,19 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     // ---------- Экран «Твики» из каталога ----------
     // Список привязан к _vm.Tweaks (ItemsControl + DataTemplate в XAML). Мгновенная отрисовка
     // из кэша + фоновая сверка реального состояния живут в MainViewModel.BuildTweaksAsync.
-    private async void BuildTweaks() => await _vm.BuildTweaksAsync(Loc.Lang);
+    private async void BuildTweaks() { await _vm.BuildTweaksAsync(Loc.Lang); RefreshTweaksUpsell(); }
+
+    /// <summary>Открыть раздел «Настройки» (там активация Pro/промокод).</summary>
+    private void GoPro_Click(object sender, RoutedEventArgs e) => ShowPanel("settings");
+
+    /// <summary>Показать/скрыть апселл под списком твиков (в Free, если что-то скрыто за Pro).</summary>
+    private void RefreshTweaksUpsell()
+    {
+        if (CardTweaksUpsell is null) return;
+        bool show = !_vm.IsProTier && _vm.LockedCount > 0;
+        CardTweaksUpsell.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        if (show) TxtTweaksUpsell.Text = string.Format(Loc.T("pro.locked"), _vm.LockedCount);
+    }
 
     // ---------- Dev-самоскриншот (--shot=<путь>) ----------
     private void MaybeSelfShot()

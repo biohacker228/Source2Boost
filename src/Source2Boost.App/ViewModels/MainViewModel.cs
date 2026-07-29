@@ -73,6 +73,14 @@ public sealed class MainViewModel : ObservableObject
     /// Живут ОТДЕЛЬНО от основного списка, чтобы эксперименты были в своём разделе.</summary>
     public ObservableCollection<TweakRowViewModel> LabTweaks { get; } = new();
 
+    private bool _isProTier;
+    /// <summary>Текущий тир — Pro (активирован или триал). Для гейтинга UI.</summary>
+    public bool IsProTier { get => _isProTier; set => SetProperty(ref _isProTier, value); }
+
+    private int _lockedCount;
+    /// <summary>Сколько твиков скрыто в Free (доступны в Pro) — для апселл-подписи.</summary>
+    public int LockedCount { get => _lockedCount; set => SetProperty(ref _lockedCount, value); }
+
     /// <summary>
     /// Строит список твиков МГНОВЕННО из кэша «применён», затем в фоне сверяет реальное
     /// состояние (параллельно) и поправляет тумблеры на месте + перезаписывает кэш.
@@ -84,6 +92,11 @@ public sealed class MainViewModel : ObservableObject
 
         Tweaks.Clear();
         LabTweaks.Clear();
+        // Тир Free: в бесплатной версии — только безопасные твики. Агрессивные/оптимальные (не-Safe)
+        // и вся Лаборатория (эксперименты) — Pro. Прячем их и считаем, сколько скрыто, для апселла.
+        bool pro = LicenseService.IsPro;
+        IsProTier = pro;
+        int locked = 0;
         var real = new List<TweakRowViewModel>();   // строки, участвующие в применении (не «скоро»)
         foreach (var tw in TweakCatalog.All())
         {
@@ -91,6 +104,9 @@ public sealed class MainViewModel : ObservableObject
             bool experimental = tw is IExperimental;
             bool supported; try { supported = soon || tw.IsSupported(ctx); } catch { supported = true; }
             if (!soon && !supported) continue;
+            // Pro-only: любой эксперимент (Лаборатория) или твик рискованнее Safe.
+            bool proOnly = !soon && (experimental || tw.Risk != RiskLevel.Safe);
+            if (!pro && proOnly) { locked++; continue; }
             bool applied = !soon && cache.TryGetValue(tw.Id, out var on) && on;
             var row = new TweakRowViewModel(tw, soon, applied, lang);
             // Эксперименты — в свой раздел «Лаборатория», остальные — в основной список.
@@ -98,6 +114,7 @@ public sealed class MainViewModel : ObservableObject
             else Tweaks.Add(row);
             if (!soon) real.Add(row);
         }
+        LockedCount = locked;
 
         var actual = await ComputeAppliedAsync(real.Select(r => r.Tweak));
         foreach (var row in real)
