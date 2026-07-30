@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>latest</LangVersion>
     <RootNamespace>Source2Boost.App</RootNamespace>
     <AssemblyName>Source2Boost</AssemblyName>
@@ -14,10 +15,20 @@
     <Version>1.2.0</Version>
     <Company>Source2Boost</Company>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <!-- WFAC010: WinForms предлагает вынести DPI из манифеста, но манифест нужен WPF — глушим. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Resource Include="icon.ico" />
+  </ItemGroup>
+
+  <!-- WinForms нужен только для значка в трее (System.Windows.Forms.NotifyIcon). Убираем его
+       неявные global usings, иначе они конфликтуют с WPF-типами (Application, MessageBox, Color,
+       Brush, Point и т.д.) по всему проекту. WinForms-типы в коде пишем полным именем. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

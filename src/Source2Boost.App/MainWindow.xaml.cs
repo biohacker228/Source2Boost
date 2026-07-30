@@ -201,6 +201,14 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         ApplicationAccentColorManager.Apply(_dark ? AccentColor : Color.FromRgb(0xE8, 0x5D, 0x1A),
                                             ApplicationThemeManager.GetAppTheme());
 
+    /// <summary>Закрытие окна не завершает приложение, а сворачивает в трей (сторож CS2 продолжает
+    /// работать в фоне). Реальный выход — из меню значка в трее («Выход»).</summary>
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        if (Application.Current is App app && app.HandleMainWindowClosing()) { e.Cancel = true; return; }
+        base.OnClosing(e);
+    }
+
     // ---------- Тема: живая смена тёплой палитры ----------
     private bool _dark = true;
 
@@ -244,6 +252,8 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         }
         ApplicationThemeManager.Apply(dark ? ApplicationTheme.Dark : ApplicationTheme.Light);
         ApplyAccent();
+        RecolorNav();            // навигация держит резолвнутые кисти — перекрасить под новую тему
+        RefreshBoostHighlight(); // подписи/подсветка планов тоже используют резолвнутые кисти
     }
 
     // ---------- Навигация ----------
@@ -252,20 +262,15 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         if (sender is FrameworkElement fe && fe.Tag is string id) ShowPanel(id);
     }
 
+    private string _activePanelId = "dash";
+
     private void ShowPanel(string id)
     {
         foreach (var (key, panel) in _panels)
             panel.Visibility = key == id ? Visibility.Visible : Visibility.Collapsed;
 
-        var soft = (Brush)FindResource("AccentSoft");
-        var accent = (Brush)FindResource("Accent");
-        var t2 = (Brush)FindResource("Text2");
-        foreach (var (key, nav) in _navs)
-        {
-            bool on = key == id;
-            nav.Background = on ? soft : Brushes.Transparent;
-            nav.Foreground = on ? accent : t2;
-        }
+        _activePanelId = id;
+        RecolorNav();
 
         if (id == "restore") BuildRestore();
         else if (id == "cs2") RefreshCs2();
@@ -275,6 +280,23 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
         else if (id == "dash") BuildDashboard();
         else if (id == "lab") RefreshLab();
         else if (id == "settings") RefreshAutomation();
+    }
+
+    /// <summary>Перекрасить пункты навигации ТЕКУЩИМИ кистями темы. Важно вызывать после смены темы:
+    /// цвета навигации задаются резолвнутыми кистями (не DynamicResource), иначе при переключении на
+    /// светлую тему пункты оставались бы старым тёмным цветом и «пропадали» на светлом фоне.</summary>
+    private void RecolorNav()
+    {
+        if (_navs is null) return;
+        var soft = (Brush)FindResource("AccentSoft");
+        var accent = (Brush)FindResource("Accent");
+        var t2 = (Brush)FindResource("Text2");
+        foreach (var (key, nav) in _navs)
+        {
+            bool on = key == _activePanelId;
+            nav.Background = on ? soft : Brushes.Transparent;
+            nav.Foreground = on ? accent : t2;
+        }
     }
 
     // ---------- Сканирование ----------
@@ -479,6 +501,18 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
             : (Core.LicenseService.TrialActive ? string.Format(Loc.T("pro.trial"), Core.LicenseService.TrialDaysLeft) : "");
         RowPromo.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
         TxtProPromoHint.Visibility = activated ? Visibility.Collapsed : Visibility.Visible;
+#if DEBUG
+        RowDebugTier.Visibility = Visibility.Visible;
+        DebugTierToggle.IsChecked = Core.LicenseService.IsPro;
+#endif
+    }
+
+    private void DebugTierToggle_Click(object sender, RoutedEventArgs e)
+    {
+#if DEBUG
+        Core.LicenseService.DebugOverride = DebugTierToggle.IsChecked == true ? Core.Tier.Pro : Core.Tier.Free;
+        RefreshPro(); BuildTweaks(); RefreshLab(); RefreshBoostMode();
+#endif
     }
 
     /// <summary>Сторож CS2 нужен, если включён Авто-режим ИЛИ твик аффинити CS2 (его надо
@@ -562,6 +596,12 @@ public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     private async Task RunProfile(Profile profile)
     {
         if (_busy) return;
+        // В Free доступен только безопасный профиль; «Оптимальный»/«Максимум» — Pro.
+        if (profile != Profile.Safe && !Core.LicenseService.IsPro)
+        {
+            await ShowInfoDialog(Loc.T("pro.title"), Loc.T("pro.profile"));
+            return;
+        }
         var tweaks = TweakCatalog.ForProfile(profile, Ctx()).ToList();
         var confirm = string.Format(Loc.T("opt.confirm"), Loc.T(ProfileNameKey(profile)), Loc.Tweaks(tweaks.Count));
         if (tweaks.Any(t => t.RequiresRestart)) confirm += Loc.T("opt.reboot");

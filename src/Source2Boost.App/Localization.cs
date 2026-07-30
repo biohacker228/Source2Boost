@@ -95,6 +95,7 @@ public static class Loc
                                   "Бенчмарк «до/після» з графіком фреймтайму — функція Pro. Відкрий Pro (7 днів безкоштовно після встановлення або промокодом) у «Налаштуваннях».",
                                   "The before/after benchmark with a frametime graph is a Pro feature. Unlock Pro (7-day free trial after install, or a promo code) in Settings."),
         ["pro.automode"]    = new("Авто-режим (буст при старте CS2) — функция Pro. Открой Pro в «Настройках».", "Авто-режим — функція Pro. Відкрий Pro у «Налаштуваннях».", "Auto mode is a Pro feature. Unlock Pro in Settings."),
+        ["pro.profile"]     = new("Профили «Оптимальный» и «Максимум» — Pro. В Free применяется безопасный профиль. Открой Pro в «Настройках» (7 дней бесплатно или промокод).", "Профілі «Оптимальний» і «Максимум» — Pro. У Free — безпечний профіль. Відкрий Pro у «Налаштуваннях».", "Optimal and Maximum profiles are Pro. Free applies the safe profile. Unlock Pro in Settings."),
         ["pro.locked"]      = new("🔒 Ещё {0} твиков (агрессивные + Лаборатория + бенчмарк) — в Pro", "🔒 Ще {0} твіків (агресивні + Лабораторія + бенчмарк) — у Pro", "🔒 {0} more tweaks (aggressive + Lab + benchmark) — in Pro"),
         ["pro.lab.locked"]  = new("Лаборатория экспериментов — функция Pro. Открой Pro в «Настройках», чтобы включать и проверять эксперименты бенчмарком.", "Лабораторія — функція Pro. Відкрий Pro у «Налаштуваннях».", "The experiment Lab is a Pro feature. Unlock Pro in Settings to enable and benchmark experiments."),
         ["pro.tier"]        = new("Тариф", "Тариф", "Plan"),
@@ -107,6 +108,13 @@ public static class Loc
         ["pro.promo.btn"]   = new("Активировать", "Активувати", "Activate"),
         ["pro.promo.ok"]    = new("Готово! Pro открыт навсегда.", "Готово! Pro відкрито назавжди.", "Done! Pro unlocked forever."),
         ["pro.promo.bad"]   = new("Неверный промокод.", "Невірний промокод.", "Invalid promo code."),
+
+        // ---- Трей ----
+        ["tray.open"]       = new("Открыть", "Відкрити", "Open"),
+        ["tray.exit"]       = new("Выход", "Вихід", "Exit"),
+        ["tray.hint"]       = new("Свёрнут в трей и следит за запуском CS2. Правый клик по значку → «Выход», чтобы закрыть полностью.",
+                                  "Згорнуто в трей і стежить за запуском CS2. Правий клік по значку → «Вихід», щоб закрити повністю.",
+                                  "Minimized to tray, watching for CS2. Right-click the icon → \"Exit\" to close fully."),
 
         ["nav.settings"]     = new("Настройки", "Налаштування", "Settings"),
         ["settings.title"]   = new("Настройки", "Налаштування", "Settings"),
