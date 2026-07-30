@@ -15,11 +15,11 @@ public sealed class DefenderExclusionTweak : ITweak
     public bool RequiresRestart => false;
 
     public L10n Title { get; } = new(
-        "Исключение cs2.exe в Defender", "Виняток cs2.exe у Defender", "Defender exclusion for cs2.exe");
+        "Ускорить Defender: исключить CS2", "Прискорити Defender: виключити CS2", "Speed up Defender: exclude CS2");
     public L10n Description { get; } = new(
-        "Добавляет cs2.exe и папку игры в исключения Microsoft Defender — realtime-антивирус не сканирует игру, меньше хитчей CPU. Обратимо (Remove-MpPreference).",
-        "Додає cs2.exe та папку гри до винятків Microsoft Defender — realtime-антивірус не сканує гру, менше хітчів CPU. Оборотно (Remove-MpPreference).",
-        "Adds cs2.exe and its folder to Microsoft Defender exclusions — the real-time AV won't scan the game, fewer CPU hitches. Reversible (Remove-MpPreference).");
+        "РЕКОМЕНДУЕМЫЙ способ убрать нагрузку от антивируса: Defender перестаёт сканировать cs2.exe и папку игры — меньше хитчей CPU. Защиту системы в целом НЕ снимает и, в отличие от полного отключения Defender, надёжно держится (не откатывается «Защитой от подделки»). Обратимо.",
+        "РЕКОМЕНДОВАНИЙ спосіб прибрати навантаження від антивіруса: Defender перестає сканувати cs2.exe і папку гри — менше хітчів CPU. Захист системи НЕ знімає й, на відміну від повного вимкнення, надійно тримається. Оборотно.",
+        "The RECOMMENDED way to remove AV overhead: Defender stops scanning cs2.exe and the game folder — fewer CPU hitches. It does NOT remove system protection and, unlike fully disabling Defender, it reliably sticks (Tamper Protection doesn't revert it). Reversible.");
     public L10n Impact { get; } = new(
         "-хитчи CPU", "-хітчі CPU", "-CPU hitches");
 

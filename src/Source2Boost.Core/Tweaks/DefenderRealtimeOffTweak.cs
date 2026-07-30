@@ -19,9 +19,9 @@ public sealed class DefenderRealtimeOffTweak : ITweak
     public L10n Title { get; } = new(
         "Выключить Defender (realtime)", "Вимкнути Defender (realtime)", "Disable Defender (realtime)");
     public L10n Description { get; } = new(
-        "🔴🔴 БЕЗБАШЕННО: полностью отключает антивирус Defender в реальном времени — весь CPU, что он тратил на сканирование, уходит в игру. Это СНИМАЕТ ЗАЩИТУ от вирусов, включай только осознанно и на чистой системе. Обратимо. Если не срабатывает — выключи «Защиту от подделки» (Tamper Protection) в Безопасности Windows.",
-        "🔴🔴 БЕЗБАШЕННО: повністю вимикає антивірус Defender у реальному часі — весь CPU, що він витрачав на сканування, іде в гру. Це ЗНІМАЄ ЗАХИСТ від вірусів, вмикай лише свідомо й на чистій системі. Оборотно. Якщо не спрацьовує — вимкни «Захист від підробки» (Tamper Protection).",
-        "🔴🔴 UNHINGED: fully disables Defender real-time protection — all the CPU it spent scanning goes to the game. This REMOVES virus protection; enable only knowingly on a clean system. Reversible. If it doesn't stick, turn off Tamper Protection in Windows Security first.");
+        "🔴🔴 БЕЗБАШЕННО, НЕ обязателен: обычно хватает твика «Ускорить Defender: исключить CS2» (безопаснее и держится). Этот же полностью отключает антивирус в реальном времени — весь CPU со сканирования уходит в игру, но это СНИМАЕТ ЗАЩИТУ от вирусов. Только осознанно и на чистой системе. Обратимо. Часто НЕ держится: Windows возвращает Defender сама — тогда надо вручную выключить «Защиту от подделки» (Tamper Protection) в Безопасности Windows.",
+        "🔴🔴 БЕЗБАШЕННО, НЕ обов'язковий: зазвичай досить твіка «Прискорити Defender: виключити CS2» (безпечніше й тримається). Цей повністю вимикає антивірус у реальному часі — CPU зі сканування йде в гру, але це ЗНІМАЄ ЗАХИСТ. Лише свідомо. Оборотно. Часто НЕ тримається: Windows повертає Defender — тоді вимкни «Захист від підробки» вручну.",
+        "🔴🔴 UNHINGED, NOT required: the «Speed up Defender: exclude CS2» tweak is usually enough (safer, and it sticks). This one fully disables real-time protection — all scan CPU goes to the game, but it REMOVES virus protection. Only knowingly, on a clean system. Reversible. Often does NOT stick: Windows re-enables Defender unless you turn off Tamper Protection manually in Windows Security.");
     public L10n Impact { get; } = new(
         "+CPU (−−защита)", "+CPU (−−захист)", "+CPU (−−security)");
 
